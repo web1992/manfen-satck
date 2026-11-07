@@ -1,16 +1,16 @@
 ---
 name: principle-redesign-from-first-principles
-description: "Apply when integrating a new requirement into an existing design."
+description: "把新需求并入既有设计时采用。"
 disable-model-invocation: true
 ---
 
 # Redesign From First Principles
 
-When integrating a change, don't bolt it onto the existing design. Redesign as if the requirement had been a foundational assumption from the start.
+集成变更时，不要把它硬焊在现有设计上。按「若该需求从一开始就是 foundational 假设，我们会怎么写」来重新设计。
 
-- Read all affected files and understand the current design
-- Ask: "if we were writing this from scratch with this new requirement, what would we build?"
-- Propagate the change through every reference: types, docs, examples, rationale sections
-- Think about the whole redesign, then deliver it incrementally
+- 读清所有受影响文件，理解当前设计
+- 自问：「若从零开始写，且带着这项新需求，我们会建什么？」
+- 把变更传播到每一处引用：类型、文档、示例、rationale 章节
+- 先想清楚整体设计，再分步交付
 
-This is the method for preserving option value when integrating changes into an existing design.
+这是在既有设计中集成变更时保留 option value 的做法。

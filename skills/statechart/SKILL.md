@@ -1,82 +1,82 @@
 ---
 name: statechart
-description: "Check a TLA+ model of a system that moves between states, such as a product flow, a protocol, or a service, and draw it as a Mermaid statechart. The report gives the shortest path to each state that breaks a rule. Use for /statechart, or to show a bug as a path through states."
+description: "对会在状态间迁移的系统（如产品流程、协议或服务）做 TLA+ model 检查，并绘制成 Mermaid statechart。报告给出到达各违反规则状态的最短路径。用于 /statechart，或把 bug 展示为穿越状态的路径。"
 disable-model-invocation: true
 ---
 
 # Statechart
 
-The chart shows how a system moves between states, in the words of the person who reads it. That person, the reader, decides whether the behavior is right.
+图表展示系统如何在状态间迁移，用词面向阅读者。阅读者据此判断行为是否正确。
 
 ## Run
 
-Work in a scratch folder outside the repo. Write a TLA+ spec and its config. Then run:
+在仓库外的 scratch 目录中工作。编写 TLA+ spec 及其 config，然后运行：
 
 ```sh
 <skill dir>/scripts/statechart SPEC.tla [--config FILE] [--view FILE] [--out DIR]
 ```
 
-`scripts/statechart.ts` is TypeScript, so run it with a runtime that can execute TypeScript.
+`scripts/statechart.ts` 是 TypeScript，需用能执行 TypeScript 的运行时运行。
 
-The first run installs TLC and Java with mise and needs the network.
+首次运行会通过 mise 安装 TLC 与 Java，需要网络。
 
 ## Write the spec
 
-- Write each rule that the reader agrees to as an INVARIANT. A rule can be about a screen, a result, a stored value, or a message. If the model has no variable for a rule, add the variable. Never weaken a rule to make it hold.
-- Write `Next` as a disjunction of the actions, such as `YouPressPlay \/ YouPressStop`. If you do not, TLC names every step `Next`.
-- A state with no step out breaks `NoDeadlock`, also when it is a correct end state. When an INVARIANT or a PROPERTY already has that name, the rule is `CHECK_DEADLOCK`. Add to `Next` an action that is true only in the end states and changes nothing, such as `Done == phase \in {"paid", "failed"} /\ UNCHANGED vars`, and give it a label in `step()`.
+- 把阅读者认同的每条规则写成 INVARIANT。规则可关于某屏、某结果、某存储值或某消息。若 model 没有对应变量的规则，补上变量。永远不要为让规则成立而削弱规则。
+- 将 `Next` 写成各 action 的析取，例如 `YouPressPlay \/ YouPressStop`。否则 TLC 会把每一步都命名为 `Next`。
+- 没有出边的状态会打破 `NoDeadlock`，即使它是正确的终态。若已有同名 INVARIANT 或 PROPERTY，规则名为 `CHECK_DEADLOCK`。在 `Next` 中增加仅在终态为真且不改变任何事的 action，例如 `Done == phase \in {"paid", "failed"} /\ UNCHANGED vars`，并在 `step()` 中给它 label。
 
 ## Pick the chart
 
-You do the work that needs judgment: the words on each state and arrow, the phases and their colors, the title, and the report to the reader. Put your work in a view module, and give it with `--view`.
+需要判断力的工作由你完成：各状态与箭头上的措辞、阶段及其颜色、标题，以及给阅读者的报告。把成果放在 view module 中，并用 `--view` 传入。
 
-To show the reader's words, the view exports `state(vars)`. The value that `state()` returns picks the form:
+要展示阅读者的用语，view 导出 `state(vars)`。`state()` 的返回值决定图表形式：
 
-- A string gives a flat chart: `export const state = (v) => (v.paid ? "Paid" : "Paying");`
-- An array gives parent states: `export const state = (v) => v.main.split(".");`
-- An object gives one parallel region for each key: `export const state = (v) => ({ Playback: v.playback, Volume: v.volume });`
+- 字符串 → 扁平图：`export const state = (v) => (v.paid ? "Paid" : "Paying");`
+- 数组 → 父状态：`export const state = (v) => v.main.split(".");`
+- 对象 → 每个 key 一个并行 region：`export const state = (v) => ({ Playback: v.playback, Volume: v.volume });`
 
-Label each state with what the reader can see or cares about, such as "Paying" or "Lease held, write pending". Keep variable names out of labels. In `vars`, a TLA+ sequence is an object with keys from 1, so `v.pc[1]` is `pc[1]`. A set is an array.
+用阅读者能看见或关心的内容标注各状态，例如「Paying」或「Lease held, write pending」。label 中不要出现变量名。在 `vars` 里，TLA+ 序列是键从 1 起的对象，故 `v.pc[1]` 即 `pc[1]`。集合是数组。
 
-The view can also export `step(action, from, to)`. It gets the TLC action name and the values before and after the step, and it returns the label of the arrow. Write each step label as the user sees it happen, such as "you press play" or "the connect fails". Do not name the code or the TLA+ action. Two actions that end the same in the chart get the same label, so that they share one arrow.
+view 还可导出 `step(action, from, to)`。它接收 TLC action 名与步进前后的值，返回箭头 label。每一步 label 按用户所见写成，例如「you press play」或「the connect fails」。不要写代码名或 TLA+ action 名。在图上结局相同的两条 action 用同一 label，从而共用一条箭头。
 
-When a step can occur only in some conditions, end its label with the condition in brackets, in the reader's words, such as `you press play [while the file loads]`. In a regions chart, the command writes the condition on the other regions on the arrow, in the words of their labels, such as `[when Offline]`. Your brackets replace it, and two arrows from one state can then look the same. So in a regions chart, do not write brackets for a condition on another region. When a value that no label shows decides where a step goes, name the result in the label, such as "the roster read fails".
+某步仅在部分条件下可发生时，在 label 末尾用方括号写条件，用阅读者的措辞，例如 `you press play [while the file loads]`。在 regions 图中，命令会在箭头上用其他 region label 的措辞写条件，例如 `[when Offline]`。你的方括号会替换它，于是从同一状态出发的两条箭头可能看起来相同。因此在 regions 图中不要为另一 region 上的条件写方括号。当某个 label 未展示的值决定步进去向时，在 label 中写明结果，例如「the roster read fails」。
 
-The view can also export these:
+view 还可导出：
 
-- `group(vars)` returns the name of a phase. Each chart state gets the color of its group. When the model states behind one chart state are in different groups, that state gets no color.
-- `colors` gives each group name a color class.
-- `title` is a string that the chart shows at the top.
+- `group(vars)` 返回阶段名。每个图表状态使用该 group 的颜色。当一个图表状态背后的 model 状态分属不同 group 时，该状态不着色。
+- `colors` 为每个 group 名指定 color class。
+- `title` 为图表顶部显示的字符串。
 
-The command calls `state()` and `group()` at most once for each model state, and `step()` at most once for each step. The chart and the report both use those answers. So make each function depend only on its arguments.
+命令对每个 model 状态最多调用一次 `state()` 与 `group()`，对每个 step 最多调用一次 `step()`。图表与报告共用这些结果，因此每个函数应只依赖其参数。
 
-The chart does not draw a step that stays in one label. Split a label when the reader must see such a step.
+图表不绘制停留在同一 label 内的 step。当阅读者必须看到此类 step 时，拆分 label。
 
-Aim for about 20 arrows or fewer, because a busier chart is hard to read. First return coarser labels from `state()`. Give one label to values that act the same, and leave out a detail that the reader does not need, such as a call in flight whose return changes nothing. Keep each state of a bug path, and keep each mark. When a merge changes a `breaks` state to `mayBreak`, it hides where a rule breaks. Do not merge two states that break different rules, because the reader then cannot see which rule breaks where. If the chart is still too busy, return `null` from `step()` for the steps that the reader does not need, such as a reset that every state has, or a step whose arrow repeats what other arrows show. Obey these rules when you hide steps:
+目标大约 20 条箭头或更少，更密的图难以阅读。先让 `state()` 返回更粗的 label。对表现相同的值共用一个 label，省略阅读者不需要的细节，例如返回不改变任何事的在途调用。保留 bug path 上的每个状态与每个 mark。合并若把 `breaks` 状态变成 `mayBreak`，会掩盖规则在何处被打破。不要合并打破不同规则的两状态，否则阅读者无法看出哪条规则在何处打破。若图仍过密，对阅读者不需要的 step 从 `step()` 返回 `null`，例如每个状态都有的 reset，或箭头重复其他箭头信息的 step。隐藏 step 时遵守：
 
-- Keep each chart state reachable by arrows from a start state.
-- Keep at least one arrow out of each chart state that has a step out in the model.
-- Hide all the steps of an arrow, or none of them. When you hide only some, its condition gets narrower.
-- In the hand-off, say which steps the chart hides.
+- 每个图表状态仍须能从起始状态经箭头到达。
+- 每个在 model 中有出边的图表状态至少保留一条出箭头。
+- 隐藏某箭头的全部 step，或全不隐藏。只隐藏部分会使其条件变窄。
+- 在 hand-off 中说明图表隐藏了哪些 step。
 
 ## Read the report
 
-- In the chart, a state that breaks a rule has the class `breaks`. When only some model states behind it break the rule, it has the class `mayBreak`. The Legend names the rules of each mark. When two rules break, it names both on one mark, so say in the hand-off which state breaks which rule. In a regions chart, a state gets a mark when each combination of region states that includes it can break a rule. When a combination can break a rule and none of its states has a mark, each state in that combination gets a mark.
-- TLC goes past a state that breaks a rule, so the chart shows the states after a bug.
-- Because TLC goes past bugs, a model with no limit on its states can run without end. Keep the constants small, or add a CONSTRAINT.
-- With a VIEW or a SYMMETRY, TLC counts states that it treats as the same as one state, and the chart draws that one state. An arrow can lead to it rather than to the state that the step reaches, and the report says so.
-- TLC checks the rules in each state past a CONSTRAINT or an ACTION_CONSTRAINT, but it does not explore that state or check it for deadlock. When TLC's shortest path for a rule ends in such a state, the chart draws that state, and the report gives that path. The chart does not draw the other states past the bound. A deadlock in such a state does not show. TLC also checks the rules after each step that an ACTION_CONSTRAINT excludes, also when it reaches the next state another way. When TLC's shortest path for a rule ends with such a step, the chart draws that step.
-- The command checks the rules with TLC on the config as written, with one worker. When a rule breaks, the command removes that rule and runs TLC again, until no rule breaks. After the first break, each run stops at 100,000 distinct states, so that a large model does not run without end. When a run reaches that bound or stops on an error, the report lists the rules that it did not check under "Rules not checked", and the chart does not mark them. A rule that is not checked can hold or break. To check it, remove the rules that break from the config, or make the model smaller. The bound adds a module that changes TLC's order of the variables, so for a property TLC can find a different counterexample than a run without the bound.
-- `tlc.out` is what TLC printed on the config as written. When the chart does not show the bug path of a rule that breaks, `tlc-RULE.out` is what TLC printed for the run that found it. When TLC repeats its first warning, plain TLC prints it twice, but `tlc.out` shows it once, because TLC leaves the second copy out of the output that this command reads. That happens only when Java runs with `-XX:+UseParallelGC`, since otherwise TLC's first warning is its advice to pass that flag, which it prints once.
+- 图表中，打破规则的状态带有 class `breaks`。仅其背后部分 model 状态打破规则时，带有 class `mayBreak`。Legend 标出各 mark 对应的规则。两条规则同时打破时，一个 mark 上列出两者，因而在 hand-off 中说明哪个状态打破哪条规则。在 regions 图中，当包含某状态的每种 region 状态组合都能打破规则时，该状态获得 mark。某组合能打破规则但其状态均无 mark 时，该组合中每个状态都获得 mark。
+- TLC 会越过打破规则的状态，因此图表会显示 bug 之后的状态。
+- 正因 TLC 会越过 bug，对状态数无上限的 model 可能永远跑不完。保持 constant 较小，或添加 CONSTRAINT。
+- 使用 VIEW 或 SYMMETRY 时，TLC 把视为相同的状态计为一个，图表只画该状态。箭头可能指向它而非 step 实际到达的状态，报告会说明。
+- TLC 会在越过 CONSTRAINT 或 ACTION_CONSTRAINT 后的每个状态检查规则，但不会探索该状态或检查 deadlock。当某条规则的最短路径止于此类状态时，图表画出该状态，报告给出该路径。图表不画界限之后的其他状态。此类状态中的 deadlock 不会显示。TLC 也会在 ACTION_CONSTRAINT 排除的每步之后检查规则，即使它通过另一条路径到达下一状态。当某条规则的最短路径以此类 step 结束时，图表画出该 step。
+- 命令按所写 config 用单 worker 通过 TLC 检查规则。某条规则打破时，命令移除该规则并再次运行 TLC，直至无规则打破。首次打破之后，每次运行在遇到 100,000 个不同状态时停止，以免大 model 永无止境。运行触及该界限或因错误停止时，报告在「Rules not checked」下列出未检查的完整规则，图表不对其做 mark。未检查的 rule 可能成立也可能打破。要检查它，从 config 移除已打破的规则，或缩小 model。该界限会加入一个改变 TLC 变量顺序的 module，因此对某 property，TLC 可能找到与无界限运行不同的反例。
+- `tlc.out` 是 TLC 按所写 config 打印的内容。若图表未显示某条已打破规则的 bug path，`tlc-RULE.out` 是找到该路径那次运行的 TLC 输出。当 TLC 重复其第一条 warning 时，纯 TLC 会打印两次，但 `tlc.out` 只显示一次，因为 TLC 不把第二份副本放进本命令读取的输出。这仅当 Java 以 `-XX:+UseParallelGC` 运行时发生；否则 TLC 的第一条 warning 是建议传入该 flag 的提示，只打印一次。
 
 ## Show the chart
 
-Show `chart.mmd` to the user as a `mermaid` code block. The chart has a budget of 500 states, counted by TLC on the config as written. Above that, the chart draws only the paths to the rules that break, and when no rule breaks, the command writes no `chart.mmd`. It still checks each rule, and the report gives the state count and each bug path. To see the whole graph, make the model smaller.
+以 `mermaid` 代码块向用户展示 `chart.mmd`。图表预算为 500 个状态，按所写 config 由 TLC 计数。超过时，图表只绘制通向打破规则的路径；若无规则打破，命令不写 `chart.mmd`。它仍会检查每条规则，报告给出状态数与各 bug path。要看全图，缩小 model。
 
-Render charts with Pele. When the user asks for an image, or a chart is too large to read as text, follow `references/render.md`. Do not use a different renderer unless the user asks for it.
+用 Pele 渲染图表。用户要图片，或图太大不便以文本阅读时，遵循 `references/render.md`。除非用户要求，不要用其他 renderer。
 
 ## Hand off
 
-Give each chart and its Mermaid text to the person who must decide. Add one line for each bug: the rule, the reader's sentence for that rule, and the path as the report numbers it. Say what the model leaves out. Give the command that makes the files again, with a new `--out` folder.
+把每张图及其 Mermaid 文本交给需要做决定的人。每个 bug 加一行：规则、阅读者对该规则的句子，以及报告编号的路径。说明 model 省略了什么。给出用新 `--out` 目录重新生成文件的命令。
 
-When the model describes code, replay each bug path against the real code, as a test or a live repro, one step for each action. If a bug does not occur, think that the model is wrong until you show that it is not.
+当 model 描述代码时，在真实代码上重放每条 bug path，作为测试或 live repro，每个 action 一步。若 bug 未出现，在能证明 model 没错之前，先假定 model 有误。

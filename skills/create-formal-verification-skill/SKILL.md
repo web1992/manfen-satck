@@ -1,43 +1,43 @@
 ---
 name: create-formal-verification-skill
-description: "Generate a project-local skill that formally verifies the code where a bug costs the most and tests reach the least, in any language, with whichever verification tool fits. Use for /create-formal-verification-skill, \"model-check this race\", \"prove this invariant\", or when concurrency, retries, state machines, parsers, or unsafe code need more than tests."
+description: "生成项目本地 skill，在 bug 代价最高、测试最难触及之处，用合适验证工具对任意语言的代码做形式化验证。用于 /create-formal-verification-skill、「model-check this race」、「prove this invariant」，或当并发、重试、状态机、解析器、unsafe 代码需要超出测试的保障时。"
 disable-model-invocation: true
 ---
 
 # Create a formal verification skill
 
-A test checks the cases that someone thought to write. Formal verification checks every case in a stated scope: every order of steps in a model, every input up to a bound, or every input. This skill finds the part of the repo where that matters most, verifies one property of it, and leaves a project-local skill that lets the next agent check a change against that property. Write that skill for an agent who reads it cold, mid-change, and has never seen your work. The user must be able to trust the result and act on it without learning the verification language.
+测试只覆盖有人想到要写的用例。形式化验证覆盖陈述范围内的一切用例：模型中每一步的每一种顺序、有界内的每一种输入，或全部输入。本 skill 在仓库中找到这件事最要紧的部分，验证其一项性质，并留下项目本地 skill，让下一个 agent 能对照该性质检查变更。为那些半路接手、从未见过你工作的 agent 撰写该 skill。用户必须能信任结果并据此行动，而无需学习验证语言。
 
 ## Choose the target from the code
 
-Answer from the codebase, and ask the user only what you cannot observe. If the user named an area or a bug, start there.
+从代码库作答；仅询问你无法自行观察的内容。若用户点名某区域或某个 bug，从那里开始。
 
-A good target is a promise the code makes, where a break harms users and tests rarely reach the case that breaks it. Choose the strongest such target in the repo, not the one that is easiest to verify.
+好的目标是代码做出的一项承诺：一旦违背会伤害用户，而测试很少触达会打破它的情形。选仓库里最强的那类目标，而非最容易验证的。
 
 ## Let the question choose the tool
 
-Pick the tool that answers the question at the lowest cost: a model checker, a proof assistant, an SMT-backed verifier, or another tool. Whether events can happen in a bad order usually suits a model checker over a small model of the design, and TLA+ is the default for that in any language. Whether the code itself behaves for every input, as with memory safety, overflow, or a data-structure invariant, usually suits a verifier that runs on the code. If no verifier runs on this language, say so, and test the real code with generated inputs, not a hand model of the function. A property that must hold at every size, where a bound is not enough, can need a proof. Prefer a tool that the repo's developers can install and run, and tell the user why you chose it.
+选能以最低成本回答问题的那类工具：model checker、proof assistant、SMT 支撑的 verifier，或其他工具。事件是否可能以糟糕顺序发生，通常适合在设计的小模型上用 model checker，任意语言下 TLA+ 是此类默认。代码本身是否对每种输入都行为正确（如内存安全、溢出、数据结构不变式），通常适合在代码上运行的 verifier。若该语言没有可运行的 verifier，如实说明，并对真实代码用生成输入测试，而非手写函数模型。性质必须在任意规模成立、有界不够时，可能需要证明。优先选仓库开发者能安装并运行的工具，并向用户说明选择理由。
 
 ## What makes it good
 
-- **True to the code.** Every part of the model or proof points to code that a reviewer can open. What the verification treats as one indivisible step is one indivisible step in the code. Names come from this repo.
-- **Able to fail.** A check that you have never seen fail proves nothing. Show each property failing on a broken variant of the code it guards, such as a removed check or a reordered step.
-- **Findings stay findings.** When the current code breaks the property, report it with the counterexample in the code's terms. Do not weaken the property or the model until it passes, and do not change product code unless the user asks.
-- **Honest about scope.** Say what is verified, under which bounds and assumptions, and what is left out. A pass covers the model or the bound, not the whole system.
-- **Readable without the tool.** State the property and the harm in one plain sentence each. Tell a counterexample as a short sequence of steps in the code's words.
-- **Cheap to rerun.** One command, a reproducible tool version, and a run short enough that the next agent will use it on every relevant change.
-- **Kept in step with the code.** Record which files and functions each check covers, and the commit at which you last confirmed that the verification describes them. When the covered code changes after that commit, the next agent can see that the verification needs another look.
+- **True to the code.** 模型或证明的每一部分都对应审阅者可打开的代码。验证视为不可分割的一步，在代码里也是不可分割的一步。命名来自本仓库。
+- **Able to fail.** 从未见过失败的检查证明不了任何事。展示各性质在它守护的代码的破损变体上失败，例如删掉检查或打乱步骤顺序。
+- **Findings stay findings.** 当前代码违背性质时，用代码术语报告并给出反例。不要削弱性质或模型直到通过，也不要改产品代码，除非用户要求。
+- **Honest about scope.** 说明验证了什么、在哪些界与假设下、排除了什么。通过覆盖的是模型或界，不是整个系统。
+- **Readable without the tool.** 用各一句平实话分别陈述性质与危害。用代码用语把反例说成简短的步骤序列。
+- **Cheap to rerun.** 一条命令、可复现的工具版本、足够短的运行，使下一个 agent 在每次相关变更时都会用。
+- **Kept in step with the code.** 记录每项检查覆盖的文件与函数，以及你上次确认验证仍描述它们时的 commit。在该 commit 之后覆盖代码变更时，下一个 agent 能看出验证需要再看一眼。
 
 ## Generate the verify skill
 
-Write a project-local skill with frontmatter that names the area and says when to use it. Without frontmatter, the skill never registers. From the skill alone, the next agent must be able to tell whether a change touches the verified code, run the check, tell a real bug from a modeling error, and update the verification when a change is intended. Put the coverage record and the sync commit in the skill, and tell the next agent to move the sync commit forward only after it confirms that the verification describes the code at the new commit. Use this repo's real commands, paths, and nouns, and leave no placeholders.
+撰写带 frontmatter 的项目本地 skill，指明区域及何时使用。无 frontmatter 则 skill 不会注册。仅凭该 skill，下一个 agent 必须能判断变更是否触及已验证代码、运行检查、区分真实 bug 与建模错误，并在变更是有意为之时更新验证。把覆盖记录与 sync commit 写在 skill 里，并告知下一个 agent：仅在确认验证描述新 commit 上的代码后，才将 sync commit 前移。使用本仓库的真实命令、路径与名词，不留占位符。
 
-If the check is a TLA+ model, tell the next agent to read every result with the pstack [`/statechart`](../statechart/SKILL.md) skill. It shows each invariant violation the checker finds as its shortest path in plain words. When the check passes, `/statechart` draws a chart of how the system moves between states. Refer to `/statechart` by name. Its commands, options, and file paths change between releases and machines, so copy none of them into the generated skill or its scripts.
+若检查是 TLA+ 模型，告知下一个 agent 用 pstack 的 [`/statechart`](../statechart/SKILL.md) skill 阅读每条结果。它以平实语言展示 checker 发现的每个不变式违背的最短路径。检查通过时，`/statechart` 绘制系统在状态间如何移动的图。按名称引用 `/statechart`。其命令、选项与文件路径随版本与机器而变，不要把它们抄进生成的 skill 或其脚本。
 
 ## Prove it before you hand off
 
-Follow the generated skill once, as the next agent would, on a scratch change that breaks the property in the real code. It must catch the break. Then drop the scratch change and confirm that the check is back where it started: passing, or failing only on the findings you will report. A verify skill that was never run is a draft. If the skill misses the break or a step does not run, fix the skill or the verification, not the scratch change.
+像下一个 agent 那样，按生成的 skill 在真实代码上做一次会破坏性质的 scratch 变更跑一遍。必须能抓住破坏。然后撤销 scratch 变更，确认检查回到起点：通过，或仅在你将报告的发现上失败。从未跑过的 verify skill 只是草稿。若 skill 漏掉破坏或某步未运行，修 skill 或验证，不要改 scratch 变更。
 
 ## Hand off
 
-Tell the user what you verified, which tool you used and why, the bounds, what the check found in plain words, how to run it, and what it does not cover. Suggest a second target only if you found a close one. Point the user at `/maintain-formal-verification-skill` for bringing the verification back in line after changes that did not recheck it.
+告知用户你验证了什么、用了哪种工具及原因、界、检查发现（平实话）、如何运行、未覆盖什么。仅当你发现相近第二目标时才建议。指向 `/maintain-formal-verification-skill`，以便在变更后未重检时把验证拉回一致。

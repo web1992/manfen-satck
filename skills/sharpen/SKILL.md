@@ -1,16 +1,16 @@
 ---
 name: sharpen
-description: "Make a task deeper, not bigger, then rewrite the prompt. Use for /sharpen."
+description: "让任务更深而不是更大，然后重写 prompt。用于 /sharpen。"
 disable-model-invocation: true
 ---
 
-I want a deeper version of this task, not a bigger one. Before rewriting it, do four things:
+我要的是这个任务的更深版本，不是更大版本。重写之前先做四件事：
 
-1. Say what a top professional in this field would do here that I'm not asking for.
-2. Name the rawest material they would start from instead of what has already been digested for me.
-3. Name the specific methods and tools they would use.
-4. Say what, other than you or me, would show the result is right.
+1. 说明这个领域里顶尖从业者会在这里做什么，而我没有在问。
+2. 点出他们会从什么最原始的素材起步，而不是我已经消化好的东西。
+3. 点出他们会用的具体方法与工具。
+4. 说明除了你和我之外，还有什么能证明结果是对的。
 
-Then rewrite my prompt to ask for exactly that.
+然后重写我的 prompt，让它正好在要这些。
 
-Leave choices that are mine to make open instead of deciding them.
+该由我做主的抉择保持开放，不要替我定下来。

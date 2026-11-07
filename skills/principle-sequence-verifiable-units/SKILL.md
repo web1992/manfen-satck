@@ -1,17 +1,17 @@
 ---
 name: principle-sequence-verifiable-units
-description: "Apply to multi-step work (sweeps, migrations, runs of similar edits) and to how you stack commits and PRs. Break work into small units that each end in a verifiable state, check each before the next, and order delivery so the sequence proves itself to a reviewer."
+description: "用于多步工作（sweep、迁移、同类编辑批量执行）以及 commit、PR 的叠放方式。把工作拆成以可验证状态收尾的小单元，每步先绿再进下一步，并按能让 reviewer 自行重放的顺序交付。"
 disable-model-invocation: true
 ---
 
 # Sequence work into verifiable units
 
-Order work as a sequence of small units, each ending in a state you can check, and don't advance until the current one is green.
+把工作排成一串小单元，每个单元以可检查的状态结束；当前单元未变绿前不前进。
 
-**Why:** A break caught at the unit that caused it is cheap to localize. A break caught after a batch is buried, and you have already built further on a broken base. Sequencing those same units into a delivery a reviewer can replay turns "trust me" into "watch it go red, then green."
+**Why:** 在造成破坏的那个单元就被抓住时，定位很便宜。等一批做完才发现，破坏已埋在底下，你又在那上面继续堆。把同样单元排成 reviewer 能重放的交付顺序，就能把「相信我」变成「看它变红，再变绿」。
 
-**Execution.** In a sweep, migration, or any run of similar edits, verify each change before starting the next. Each unit is a before/after bracket: known-good state, one change, run the check, then proceed. Rebase onto clean trunk first so every check measures against the real baseline. When a lever does the edits, the per-unit check is nearly free. Run it anyway.
+**Execution.** 在 sweep、迁移或任何同类编辑批量执行中，启动下一项前先验证当前变更。每个单元是前后括起来的：已知良好状态 → 一处变更 → 跑检查 → 再前进。先 rebase 到干净 trunk，让每个检查都相对真实基线度量。若用 lever 做编辑，单单元检查几乎免费——仍要跑。
 
-**Delivery.** Stack commits and PRs in the order that proves the work. The canonical shape is the failing test first, then the fix on top. Other story orders are a subtraction before the reshape, a baseline capture before the treatment, the scaffold before the feature. Each commit lands on its own and the sequence reads as an argument.
+**Delivery.** 按能证明工作的顺序叠放 commit 与 PR。典范形态是先 failing test，再在其上叠 fix。其他叙事顺序可以是：reshape 前先做一次 subtraction、处理前先抓 baseline、功能前先搭 scaffold。每个 commit 单独落地，整段序列读起来像一条论证。
 
-The sequencing complement to the **prove-it-works** principle skill, which keeps each check real, and the **build-the-lever** principle skill, which makes the per-unit check cheap.
+与 **prove-it-works** principle skill（让每次检查真实）以及 **build-the-lever** principle skill（让单单元检查便宜）相辅相成。

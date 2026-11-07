@@ -1,58 +1,58 @@
 ---
 name: maintain-formal-verification-skill
-description: "Bring a project's formal verification back in line with the code after the code changes: find the commits that touched verified code, update the model, harness, or properties to describe the code as it is now, rerun, and say whether each failure is drift in the verification or a bug in the code. Use for /maintain-formal-verification-skill, \"is the model still true to the code\", or after merges and refactors that touched verified code without rechecking it."
+description: "在代码变更后把项目的形式化验证与代码重新对齐：找出改动过已验证代码的 commit，更新 model、harness 或 property 以描述当前代码，重跑验证，并说明每次失败是验证漂移还是代码 bug。用于 /maintain-formal-verification-skill、「model 是否仍忠实于代码」，或在合并与重构触及已验证代码却未复查时使用。"
 disable-model-invocation: true
 ---
 
 # Maintain a formal verification skill
 
-A formal check proves a property of what it describes. When the code changes and the verification does not, the check can keep passing while it describes code that no longer exists. That pass is the dangerous case, because it looks like a proof. This skill is the upkeep loop for a verify skill that `/create-formal-verification-skill` generated, or for any project-local skill that runs a model checker, prover, or code-level verifier against named code. The project-local skill handles a change that an agent makes while it uses that skill. This skill handles the changes that skipped it: merges, edits made without the skill, and drift that builds up across many commits.
+形式化检查证明的是其所描述对象的某个性质。代码变了而验证没跟上的话，检查仍可能通过，却是在描述已不存在的代码。这种通过最危险，因为看起来像证明成立。本 skill 是 verify skill 的维护循环——可由 `/create-formal-verification-skill` 生成，也可用于任何在命名代码上跑 model checker、prover 或代码级 verifier 的项目本地 skill。项目本地 skill 处理 agent 在使用该 skill 时所做的变更；本 skill 处理那些绕过的变更：合并、未走 skill 的编辑，以及跨多笔 commit 累积的漂移。
 
 ## Outcomes
 
-Give each check one outcome, and say which:
+每个检查给一个结果，并说明是哪一种：
 
-- **in sync**: no change since the last sync alters what the check describes, and the check passes.
-- **updated**: the code changed, the verification now describes the new code, and the check passes.
-- **bug**: the verification describes the current code, and the code breaks the property. This is a finding about the code. It is not drift.
-- **blocked**: the check could not be brought back in line or could not run. Say exactly why.
+- **in sync**：自上次同步以来没有任何变更改变检查所描述的内容，且检查通过。
+- **updated**：代码变了，验证现已描述新代码，且检查通过。
+- **bug**：验证描述的是当前代码，而代码违反了该性质。这是对代码的发现，不是漂移。
+- **blocked**：检查无法重新对齐或无法运行。须明确说明原因。
 
-A check can be both updated and bug: the update makes the verification describe the code again, and then the property fails on it.
+一个检查可以同时是 updated 和 bug：更新让验证再次描述代码，随后性质在其上失败。
 
 ## Edit scope
 
-Edit only the verification: models, harnesses, property files, and the verify skill itself. Never edit product code during a run, unless the user asks you to. When a property fails on the current code, do not weaken the property or the model to make it pass. Report the failure.
+只改验证侧：model、harness、property 文件以及 verify skill 本身。运行期间不要改产品代码，除非用户要求。当某个性质在当前代码上失败时，不要削弱 property 或 model 来让它通过。报告失败即可。
 
 ## Pass
 
-1. **Find the checks.** A verify skill has no fixed name, so find it by what it does: a project skill that runs a model checker, a prover, or another verifier against named code. Read each one you find, or the one the user named. For each check, collect the property, the code it covers, the bounds and assumptions, the command that runs it, and the commit where it was last confirmed to describe the code. If no verify skill exists, stop and point at `/create-formal-verification-skill`. If the skill does not record a sync commit, use the last commit that changed the verification files, and say that you did.
+1. **找出检查。** verify skill 没有固定名称，按行为找：在命名代码上跑 model checker、prover 或其他 verifier 的项目 skill。读取找到的每一个，或用户点名的那一个。对每个检查收集：property、覆盖的代码、边界与假设、运行命令，以及上次确认其描述与代码一致时的 commit。若没有 verify skill，停止并指向 `/create-formal-verification-skill`。若 skill 未记录 sync commit，用最后一次改动验证文件的 commit，并在报告中说明。
 
-2. **Run it as it is.** Run each check once before you change anything, and record the result. A pass here does not tell you that the code is correct. It tells you that the old description still holds. A failure here can be drift or a bug. Do not decide which until step 5.
+2. **按现状先跑一遍。** 在改任何东西之前，每个检查各跑一遍并记录结果。这里的通过并不说明代码正确，只说明旧的描述仍成立。这里的失败可能是漂移或 bug。到第 5 步再判定是哪一种。
 
-3. **Read every change to covered code.** Diff the covered files from the sync commit to the current commit, and read each commit message. Also look for code that moved: a covered function that is renamed, split, or moved to another file is still covered code. Also look for new code that touches the state that a check guards, such as a new function that writes the same fields. For each change, decide which of these it is:
-   - **No effect.** The change does not alter anything the verification describes, such as formatting, comments, or code paths that the verification does not cover. Check this against the model or harness, not against the commit message.
-   - **The verification no longer describes the code.** A step that was one indivisible action is now two, a branch was added or removed, a check moved, a new path reaches the guarded state, or a value now has a different range. The model or harness must change.
-   - **The promise changed on purpose.** The change alters what the code promises, and evidence in the change says that this is intended: the doc comment, the tests, the changelog, or the commit message. The property must change, and you must cite that evidence.
-   - **The promise may be broken.** The code changed, and no evidence says that the promise changed. Treat a failure that follows as a bug candidate.
+3. **读完覆盖代码上的每一处变更。** 从 sync commit 到当前 commit，对覆盖文件做 diff，并阅读每条 commit message。还要留意代码搬迁：被覆盖的函数改名、拆分或移到别的文件，仍算覆盖代码。还要留意触及某检查所守护状态的新代码，例如写入相同字段的新函数。对每项变更判定属于：
+   - **无影响。** 变更不改变验证所描述的任何东西，例如格式化、注释，或验证未覆盖的路径。对照 model 或 harness 判断，不要只看 commit message。
+   - **验证不再描述代码。** 原先不可再分的一步变成两步、分支增删、检查迁移、新路径可达受守护状态，或取值范围变了。model 或 harness 必须改。
+   - **承诺有意改变。** 变更改变了代码所承诺的内容，且变更中有证据表明是有意的：文档注释、测试、changelog 或 commit message。property 必须改，并引用该证据。
+   - **承诺可能已被打破。** 代码变了，但没有证据表明承诺变了。随后出现的失败按 bug 候选处理。
 
-4. **Update from the code, not from the result.** Change the model or harness so that each changed part again points to code that a reviewer can open, and keep one indivisible step in the code as one step in the verification. Write the update from the code before you rerun, and do not shape it by what makes the check pass. Change a property only for a promise that changed on purpose. Write down the old wording, the new wording, and the evidence. Keep the bounds unless the change makes them wrong. If you must reduce a bound, say so in the report.
+4. **从代码更新，不从结果反推。** 改 model 或 harness，使每个改动部分再次指向审查者可打开的代码，并保持代码中不可再分的一步在验证中仍是一步。在重跑之前根据代码写更新，不要为让检查通过而塑形。仅当承诺有意改变时才改 property。写下旧表述、新表述和证据。除非变更使边界错误，否则保留边界。若必须缩小边界，在报告中说明。
 
-5. **Rerun and judge each result.**
-   - **Pass:** the check can now pass on a description that has lost the ability to fail. Break the new code the way the property guards against, such as removing a new check or reordering a new step, and confirm that the check catches it. Then drop the break.
-   - **Fail:** replay the counterexample against the real code, step by step. If a step cannot happen in the code, the verification is wrong. Fix the verification, and say what was wrong. If every step can happen, it is a bug. Name the commit that introduced it, tell the counterexample as a sequence of steps in the code's own words, and state the harm in one sentence. If a cheap test or reproduction against the real code shows the bug, add it to the report as evidence. Do not commit it to the product code.
+5. **重跑并判定每个结果。**
+   - **通过：** 检查现在可能在已丧失失败能力的描述上通过。按 property 所防范的方式破坏新代码，例如去掉新检查或打乱新步骤顺序，确认检查能抓住它，再撤销破坏。
+   - **失败：** 把反例逐步对照真实代码重放。若某步在代码中不可能发生，则验证有误。修正验证并说明错在哪里。若每步都可能发生，则是 bug。点名引入它的 commit，用代码自身用语把反例说成步骤序列，并用一句话说明危害。若有廉价的测试或对真实代码的复现能展示该 bug，作为证据写入报告。不要把它 commit 进产品代码。
 
-6. **Update the verify skill.** Update the code that each check covers, the commands, the bounds, the assumptions, and the sync commit. Set the sync commit to the commit that you checked. Do not move the sync commit for a blocked check, and say so in the report. Then follow the verify skill once as the next agent would, so that you know its steps still run.
+6. **更新 verify skill。** 更新每个检查覆盖的代码、命令、边界、假设和 sync commit。将 sync commit 设为你核查过的 commit。对 blocked 的检查不要移动 sync commit，并在报告中说明。然后按下一个 agent 会做的那样走一遍 verify skill，确认其步骤仍能运行。
 
 ## Report
 
-Tell the user, for each check:
+对每个检查告诉用户：
 
-- the outcome, and the commits that you read;
-- what changed in the verification and why, with a short reason for each change: the code changed shape, or the promise changed on purpose (with the evidence);
-- the rerun result, and the break that you used to show the updated check can still fail;
-- each bug, in plain words: the counterexample as steps in the code's words, the harm, and the commit that introduced it;
-- what the verification still does not cover, including new code that it should cover and does not.
+- 结果，以及你阅读过的 commit；
+- 验证中改了什么、为什么改，每项变更附简短理由：代码形态变了，或承诺有意改变（附证据）；
+- 重跑结果，以及用来证明更新后的检查仍能失败的那次破坏；
+- 每个 bug，用平实语言：反例用代码用语写成步骤、危害、以及引入它的 commit；
+- 验证仍未覆盖什么，包括应覆盖却未覆盖的新代码。
 
-Say outright which failures were drift in the verification and which were bugs in the code. For a check that passed before you updated it and fails after, say that the old pass was on a stale description.
+明确说出哪些失败是验证漂移、哪些是代码 bug。对更新前通过、更新后失败的检查，说明旧的通过是建立在过时描述上的。
 
-Put the verification updates in a change of their own, separate from any product fix.
+把验证更新单独做成一次变更，与任何产品修复分开。

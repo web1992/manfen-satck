@@ -1,18 +1,18 @@
 ---
 name: principle-explain-the-number
-description: "Apply before you measure, and before you trust, report, or act on a number you measured: a speedup, a regression, a throughput, a latency, or an eval result. Find what limits it, and rule out that it measured something other than the work you think."
+description: "在度量之前，以及信任、汇报或依据某数字行动之前适用：加速比、回归、吞吐、延迟或 eval 结果。找出限制因素，并排除测到的并非你以为的工作。"
 disable-model-invocation: true
 ---
 
 # Explain the Number
 
-- **Write the decision before you run.** Name the result that would change a decision, and the noise floor. Stop when the run-to-run spread is larger than the effect.
-- **Ask "why not double?"** Name the resource or code path that bounds the result, such as a core, a lock, the disk, the network, or the load generator itself. Get it from a profile or from system counters taken during a run, then map it to source. A guess from reading the code is not a limiter. If you cannot say why the number is not twice as good, you do not know what you measured.
-- **List what else the number could be measuring, and rule out each one with evidence.** The usual suspects are errors, skipped or cached work, code that never ran, an untuned side (one left on default settings), noise, and a piece too small to matter end to end.
-- **Keep the evidence with the number.** Put the run count, the spread, and the limiter in the notes or a linked artifact.
+- **跑之前写好决策。** 点名会改变决策的结果，以及噪声底。run 间离散度大于效应时停止。
+- **问「为什么不能翻倍？」** 点明限制结果的资源或代码路径，如核心、锁、磁盘、网络或负载生成器本身。用 profile 或 run 期间的系统计数得到，再映射到源码。靠读代码猜不算 limiter。说不清为何数字不能好一倍，就不知测的是什么。
+- **列出数字还可能测到什么，并用证据逐项排除。** 常见嫌疑：错误、跳过或缓存的工作、从未运行的代码、未调的一侧（仍用默认设置）、噪声、以及端到端无足轻重的片段。
+- **把证据与数字一起保留。** 在备注或链接产物里写 run 次数、离散度与 limiter。
 
-For a performance number, run the full procedure with the [benchmark-checklist](../benchmark-checklist/SKILL.md) skill. For an eval result, ask the same of the trials: did every run do the task, does the gap hold across trials and models, and does the scenario matter.
+性能数字按 [benchmark-checklist](../benchmark-checklist/SKILL.md) skill 跑完整流程。对 eval 结果，对 trial 问同样问题：每次 run 是否做了任务、差距跨 trial 与 model 是否成立、场景是否重要。
 
-You skipped this when a run started without the result that would change a decision, when the evidence behind a number has no run count, no spread, or no named limiter, or when the time saved is larger than the time the changed piece took.
+以下情况视为跳过本原则：run 开始时没有会改变决策的结果；数字背后证据无 run 次数、无离散度或无命名 limiter；或节省的时间大于改动片段所花时间。
 
-Distinct from [Prove It Works](../principle-prove-it-works/SKILL.md), which checks that an output is real.
+区别于 [Prove It Works](../principle-prove-it-works/SKILL.md)——后者检查输出是否真实。

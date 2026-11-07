@@ -1,40 +1,40 @@
 ---
 name: why
-description: "Use for 'why does X work this way', 'why we picked Y', design rationale, regressions, postmortems, or data-backed thresholds. Discovers available MCPs and queries each evidence category (source control, issue tracker, long-form docs, real-time chat, infrastructure observability, error tracking, product analytics warehouse) in parallel, then returns a cited read on decisions and tradeoffs. Use how for runtime behavior."
+description: "用于「为什么 X 是这样实现的」「为什么选 Y」、设计理由、回归、事后复盘或数据支撑的阈值。发现可用 MCP，并行查询各证据类别（源码管理、issue tracker、长文档、即时聊天、基础设施可观测性、错误追踪、产品分析数仓），再返回带引用的决策与权衡说明。运行时行为用 how。"
 disable-model-invocation: true
 ---
 
 # Why
 
-Investigate the motivation and intent behind code. The companion `how` skill answers what the code does and how it works. `why` answers what forces led to its shape.
+调查代码背后的动机与意图。配套的 `how` skill 回答代码做什么、怎么工作。`why` 回答是什么力量塑造了它的形态。
 
-Each spawn below names a role line in the `pstack-models.mdc` rule and a default. Set `model` to that line's value, or to the default if the rule or the line is missing. Leave `model` unset when the value is `auto` or `inherit-parent`. If the Task tool rejects a slug, use the default and say so. If it rejects the default, use the closest valid slug of the same family from its error message. Pick each subagent's reasoning level and fast or standard speed for the job, per the Subagents section of the **poteto-mode** skill.
+下面每次 spawn 对应 `pstack-models.mdc` 规则里的一行角色及默认值。把 `model` 设为该行的值；规则或该行缺失则用默认。值为 `auto` 或 `inherit-parent` 时不设 `model`。若 Task 工具拒绝某个 slug，改用默认并说明。若默认也被拒绝，从其错误信息里选同系列最接近的合法 slug。按 **poteto-mode** skill 的 Subagents 一节，为每个子 agent 选择推理等级以及 fast / standard 速度。
 
-Every spawn is `generalPurpose` with `readonly: false` (agent mode). **Do not use readonly/Ask mode.** It strips MCP access, which disables the MCP-backed investigators and the synthesizer's citation spot-checks. Investigators still shouldn't write anything.
+每次 spawn 为 `generalPurpose` 且 `readonly: false`（agent 模式）。**不要用 readonly / Ask 模式。** 那会去掉 MCP 访问，使基于 MCP 的 investigator 与 synthesizer 的引用抽查无法工作。investigator 仍不应写入任何内容。
 
 ## Operating Posture
 
-Operate as a **careful, cautious, and precise investigator**. Be honest about what you know vs what you're inferring. Read `references/epistemics.md` for the full confidence framework and phrasing guide. The synthesizer must follow it.
+以**谨慎、保守、精确的 investigator** 姿态工作。诚实区分已知与推断。阅读 `references/epistemics.md` 获取完整置信度框架与措辞指南。synthesizer 必须遵守。
 
 ## Step 1. Understand the Target and the Question
 
-The **target** is usually a chunk of code, a pattern, a feature, or a named design decision. The **question** is usually a design rationale, a tradeoff, a motivating edge case, an external constraint, dead code, or a broad history sweep.
+**target** 通常是代码块、模式、特性或具名设计决策。**question** 通常是设计理由、权衡、驱动的边界情况、外部约束、死代码，或大范围历史梳理。
 
-If the target is vague ("why do we do it this way?" with no clear referent), make your best guess from conversation context (open files, recent edits, cursor location, what was just discussed). State your interpretation briefly so the user can redirect if you're off, then proceed.
+若 target 含糊（「为什么这样做？」没有明确指代），从对话上下文（打开的文件、近期编辑、光标位置、刚讨论的内容）做最佳猜测。简短说明你的理解，便于用户纠正后再继续。
 
 ## Step 2. Establish the Code Anchor
 
-Before spawning investigators, build the seed context inline: file paths and line ranges, key symbols (functions, classes, constants), the last few commits touching the target, PR numbers from merge commits (pattern `(#1234)` in the subject line), and any linked ticket IDs. Run `git blame -L <start>,<end> <file>` for last-touch commits, `git log --follow -p -- <file>` for full history with patches through renames, `git log --oneline -20 -- <file>` for recent commits with PR numbers visible, and `git log -1 --format=%B <commit>` to extract PR numbers. Then pull the PR bodies and discussion for any substantive commit: `gh pr view <number> --json title,body,author,createdAt,mergedAt,labels,closingIssuesReferences,comments,reviews`. This anchor goes to every investigator and to the synthesizer.
+spawn investigator 之前，内联构建种子上下文：文件路径与行范围、关键符号（函数、类、常量）、最近触及 target 的若干 commit、merge commit 中的 PR 编号（主题行中的 `(#1234)` 模式），以及关联的 ticket ID。对末次触及的 commit 跑 `git blame -L <start>,<end> <file>`，对含 patch 与重命名的完整历史跑 `git log --follow -p -- <file>`，对近期 commit（可见 PR 号）跑 `git log --oneline -20 -- <file>`，提取 PR 编号跑 `git log -1 --format=%B <commit>`。然后拉取有实质内容的 commit 的 PR 正文与讨论：`gh pr view <number> --json title,body,author,createdAt,mergedAt,labels,closingIssuesReferences,comments,reviews`。该 anchor 发给每个 investigator 和 synthesizer。
 
 ## Step 3. Spawn Parallel Investigators
 
-**Default to the full parallel investigation.** The goal is a complete coverage map, not a minimal one. Document the null, don't skip the search.
+**默认做完整并行调查。** 目标是覆盖图完整，不是最小化。记录空结果，别跳过搜索。
 
 ### Discovery
 
-Before spawning investigators, list the available MCPs from the Cursor environment. Use the available-tools map when present. Otherwise inspect the `mcps/` directory Cursor exposes for enabled MCP servers.
+spawn investigator 之前，列出 Cursor 环境中可用的 MCP。有 available-tools map 就用；否则查看 Cursor 暴露的 `mcps/` 目录里已启用的 MCP server。
 
-Map each available MCP to one evidence category:
+把每个可用 MCP 映射到一个证据类别：
 
 1. Source control history
 2. Issue / ticket tracker
@@ -44,55 +44,55 @@ Map each available MCP to one evidence category:
 6. Error / exception tracking
 7. Product analytics warehouse
 
-Source control is always available through git and `gh`. For the other six, classify using the MCP name, server instructions, tool names, and resource descriptors. If an MCP could fit more than one category, choose the one matching its primary evidence. Record ambiguous cases in the coverage map.
+源码管理始终通过 git 与 `gh` 可用。对其余六类，用 MCP 名称、server 说明、工具名与资源描述分类。若一个 MCP 可归属多类，选与其主要证据匹配的一类。模糊情况记入 coverage map。
 
-Spawn one investigator per category that has a matching MCP, all in a single message so they run concurrently, each owning exactly one tool or MCP. Don't ask one agent to cover multiple MCPs. `model`: the `why investigators` line, default `grok-4.7-xhigh-fast`.
+每个有匹配 MCP 的类别 spawn 一个 investigator，同一条消息里并发运行，每人恰拥有一种工具或 MCP。别让一个 agent 覆盖多个 MCP。`model`：`why investigators` 行，默认 `grok-4.7-xhigh-fast`。
 
-Each investigator's prompt is `references/investigator-prompt.md` filled in, plus:
-- the category playbook `references/sources/<source>.md` for the selected MCP, adapted from the examples in `references/source-playbook.md`
-- `references/sources/incident-postmortem.md` **if the target code looks defensive** (null checks, retry logic, timeout handling, rate limiting, feature flags, egress guards, OOM handlers)
-- the code anchor and the user's original question
+每个 investigator 的 prompt 为填好的 `references/investigator-prompt.md`，外加：
+- 所选 MCP 对应的类别 playbook `references/sources/<source>.md`，改编自 `references/source-playbook.md` 中的示例
+- 若 target 代码看起来偏防御性（null 检查、重试逻辑、超时处理、限流、feature flag、出口守卫、OOM handler），加上 `references/sources/incident-postmortem.md`
+- code anchor 与用户原始问题
 
 ### Investigator roster, one per available evidence category
 
-Each category below is uniquely positioned to surface one shape of "why", shown after "Best at". Use it to know what to expect back, to name a gap when a category returns empty, and, only in the rare provably-irrelevant case, to justify a skip.
+下面每个类别独特地能呈现一种「why」形态，列在「Best at」之后。用它了解该期待什么回报、某类返回空时如何命名缺口，且仅在可证无关的罕见情况下 justify 跳过。
 
-1. **Source control** (git history, `gh` for PRs, code comments, tests). Always spawn, the only guaranteed source. Best at *implementation-time rationale captured during review*.
-2. **Issue / ticket tracker** (e.g. Linear, Jira, GitHub Issues, Plane, Shortcut MCP). Best at *the product or business forcing function*. Strongest when the why is external to engineering.
-3. **Long-form documents** (e.g. Notion, Confluence, Google Docs, Coda MCP). Best at *long-form design rationale*, written out before it becomes code.
-4. **Real-time team chat** (e.g. Slack, Discord, Microsoft Teams, Mattermost MCP). Best at *real-time deliberation that never reached a doc*. Especially important when the source control, ticket, and doc paper trail is thin.
-5. **Infrastructure observability** (e.g. Datadog, New Relic, Honeycomb, Grafana, Splunk MCP). Best at *infrastructure and runtime reality that motivated the code*. Strongest when the target reacts to an infra signal (timeouts, retries, rate limits, circuit breakers).
-6. **Error / exception tracking** (e.g. Sentry, Rollbar, Bugsnag, Airbrake MCP). Best at *the specific exceptions and error trajectories that motivated defensive or corrective code*. Strongest for catch blocks, null guards, type checks, retries, and other defenses.
-7. **Product analytics warehouse** (e.g. Databricks, Snowflake, BigQuery, ClickHouse, dbt, Redshift MCP). Best at *product and data reality that shaped the code*. Strongest for flag-gated code, experiment-driven ships, data migrations, and "where did this number come from" questions.
+1. **Source control**（git 历史、PR 用 `gh`、代码注释、测试）。始终 spawn，唯一保证来源。Best at *review 阶段留下的实现期理由*。
+2. **Issue / ticket tracker**（如 Linear、Jira、GitHub Issues、Plane、Shortcut MCP）。Best at *产品或业务上的 forcing function*。why 在工程外时最强。
+3. **Long-form documents**（如 Notion、Confluence、Google Docs、Coda MCP）。Best at *成文的长设计理由*，写在变成代码之前。
+4. **Real-time team chat**（如 Slack、Discord、Microsoft Teams、Mattermost MCP）。Best at *从未沉淀成文档的实时审议*。源码、ticket、文档纸面痕迹薄时尤其重要。
+5. **Infrastructure observability**（如 Datadog、New Relic、Honeycomb、Grafana、Splunk MCP）。Best at *促使写码的基础设施与运行时现实*。target 响应基础设施信号（超时、重试、限流、断路器）时最强。
+6. **Error / exception tracking**（如 Sentry、Rollbar、Bugsnag、Airbrake MCP）。Best at *催生防御或修正代码的具体异常与错误轨迹*。catch 块、null 守卫、类型检查、重试等防御代码时最强。
+7. **Product analytics warehouse**（如 Databricks、Snowflake、BigQuery、ClickHouse、dbt、Redshift MCP）。Best at *塑造代码的产品与数据现实*。flag 门控代码、实验驱动上线、数据迁移、「这个数字从哪来」类问题时最强。
 
 ### When to skip an investigator
 
-Only with an **explicit, written justification** that goes in the final Sources Consulted. Two valid reasons:
+仅在有**明确书面理由**、且写入最终 Sources Consulted 时跳过。两种有效理由：
 
-- **No MCP is available for that category** in this environment. Flag it as a gap, not a choice: "Real-time team chat skipped. No matching MCP available, so the conversational record was not searchable."
-- **The source is provably irrelevant**, not just "probably irrelevant." A high bar: "Error / exception tracking skipped. Target is a build-time script with no runtime code path."
+- **本环境没有该类的 MCP**。标为缺口，不是选择：「Real-time team chat skipped. No matching MCP available, so the conversational record was not searchable.」
+- **来源可证无关**，不是「大概无关」。门槛要高：「Error / exception tracking skipped. Target is a build-time script with no runtime code path.」
 
-If your scope assessment suggests a single-commit trivial target where the PR description already contains the complete answer, you may answer inline **only after** confirming all seven available category searches would be redundant. Say so explicitly. This should be rare.
+若范围评估表明是单 commit 的琐碎 target，且 PR 描述已含完整答案，可在确认七类可用搜索都会冗余后**仅内联作答**。明确说明。应罕见。
 
 ## Step 4. Synthesize
 
-Spawn one synthesizer. `model`: the `why synthesizer` line, default `claude-opus-5-5-xhigh`. It gets:
-1. The investigator findings, including any null results and any categories skipped with justification
-2. The code anchor
-3. The user's original question
-4. The epistemics framework from `references/epistemics.md`
-5. The synthesizer prompt template from `references/synthesizer-prompt.md`
+spawn 一个 synthesizer。`model`：`why synthesizer` 行，默认 `claude-opus-5-5-xhigh`。它获得：
+1. investigator 发现，含空结果与带理由跳过的类别
+2. code anchor
+3. 用户原始问题
+4. `references/epistemics.md` 中的 epistemics 框架
+5. `references/synthesizer-prompt.md` 中的 synthesizer prompt 模板
 
 ## Step 5. Present
 
-Present the synthesizer's output to the user. You may lightly edit for clarity or add context from the conversation, but **do not rewrite the confidence language**.
+向用户呈现 synthesizer 输出。可为清晰或补对话上下文做轻度编辑，但**不要改写置信度措辞**。
 
 ## Output Format
 
-The structure is the one in `references/synthesizer-prompt.md`: The Question, The Code in Question, What We Found, What We Can Reasonably Infer, Competing Hypotheses, What We Don't Know, Sources Consulted, Confidence Summary. Adapt as needed, but keep the confidence separation intact, and keep Sources Consulted as one line per investigator, including the ones that returned nothing or were skipped, with the reason.
+结构见 `references/synthesizer-prompt.md`：The Question、The Code in Question、What We Found、What We Can Reasonably Infer、Competing Hypotheses、What We Don't Know、Sources Consulted、Confidence Summary。按需调整，但保持置信度分层，Sources Consulted 每个 investigator 一行，含无结果或跳过的及原因。
 
-After Sources Consulted, if the user's `why` question is a precursor to changing this code, convert the lineage findings into a Preserve / Change / Avoid / Risk constraint set for planning the change.
+Sources Consulted 之后，若用户的 `why` 问题是改这段代码的前奏，把谱系发现转成 Preserve / Change / Avoid / Risk 约束集，供规划变更用。
 
 ## Common Failure Modes to Avoid
 
-- **Recency bias**. Assuming the most recent commit is authoritative. The current shape is often the accretion of many earlier decisions. Trace back.
+- **Recency bias**。假定最近 commit 即为权威。当前形态往往是许多早期决策的累积。往回追。

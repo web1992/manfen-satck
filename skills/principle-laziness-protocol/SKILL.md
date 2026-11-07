@@ -1,10 +1,10 @@
 ---
 name: principle-laziness-protocol
-description: "Apply when refactoring, evaluating diff size, or tempted to add abstractions, layers, or signal threading. Bias toward deletion and the smallest change that solves the problem."
+description: "重构、评估 diff 大小，或想加抽象、层、信号穿线时适用。偏向删除与解决问题的最小改动。"
 disable-model-invocation: true
 ---
 
 # Laziness Protocol
 
-- **Consolidate decisions.** Do not repeat the same choice in several places. Put it behind one source of truth and pass the result as a simple flag.
-- **Minimize the diff.** Make the smallest change that solves the problem. Fewer lines beat "elegant" boilerplate.
+- **合并决策。** 不要在多处重复同一选择。放在单一真相源后，把结果当作简单 flag 传递。
+- **最小化 diff。** 做解决问题的最小改动。更少行胜过「优雅」样板。

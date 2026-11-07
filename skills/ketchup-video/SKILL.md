@@ -1,29 +1,29 @@
 ---
 name: ketchup-video
-description: "Catch the user up like /ketchup, with a short subtitled video of slides for what happened and the waiting calls as text under it. Use for /ketchup-video."
+description: "像 /ketchup 一样帮用户赶上进度，用带字幕的短幻灯片视频展示发生了什么，等待的 call 以文字放在视频下方。用于 /ketchup-video。"
 disable-model-invocation: true
 ---
 
 # Ketchup video
 
-Follow [`/ketchup`](../ketchup/SKILL.md), but show what happened in a short subtitled video instead of its summary and visuals. Its window starts at the last message the user wrote before `/ketchup-video`, not before any earlier `/ketchup`. Writing and rendering the video, outside the repo, is the one exception to its read-only rule. The reply is ketchup's opening sentence, the embedded video, one line naming any work left that you can do yourself, and the action items. When the video shows a call's options, call each option by the name the video gives it. If the render fails, say so in one line and give only the calls.
+遵循 [`/ketchup`](../ketchup/SKILL.md)，但用带字幕的短视频展示发生的事，替代其摘要与视觉。时间窗口从用户在 `/ketchup-video` 之前写的最后一条消息起算，不是更早的 `/ketchup` 之前。在仓库外撰写并渲染视频，是其只读规则的唯一例外。回复包含 ketchup 的开场句、嵌入视频、一行点名你仍能自行推进的剩余工作，以及 action items。视频展示某个 call 的选项时，按视频给出的名称逐个 call。若渲染失败，用一行说明，只给出 call。
 
 ## Slides
 
-Use the screenshots, recordings, diffs, and data the work produced, not the chat's prose about them. Before you draw, write the one sentence the user should leave with and one line per slide. Drop each slide that does not change what the user knows. Use at most 10 slides, and fewer is better. Neither note goes in the reply.
+用工作产出的截图、录屏、diff 与数据，不用聊天里关于它们的散文。动笔前先写用户应带走的一句话，以及每页幻灯片一行说明。删掉不改变用户认知的幻灯片。最多 10 页，越少越好。这两条备注不进回复。
 
-Each slide makes one point. Build the slides on one picture and change it from slide to slide, rather than cut to an unrelated one. A color or shape means the same thing on every slide. Show the work in pictures, such as how a system works, a PR stack with each PR's state, a before and after of a fix, or options side by side. Point at what changed with arrows, highlights, and motion. A slide is never a bullet list, a status list, a table, or boxes with nothing connecting them.
+每页只讲一点。基于同一张图逐页演变，不要切到无关画面。颜色或形状在每页含义一致。用图画展示工作：系统如何运作、PR stack 及各 PR 状态、修复前后、选项并排等。用箭头、高亮与动效指向变化处。幻灯片绝不能是 bullet 列表、状态列表、表格，或无关联的框。
 
-Keep text to the minimum. Put each label on the thing it names, in plain words a person would say, not tags like "Tests: pass". Never caption what a picture shows, and never give a fact twice, across slides or in the text under them.
+文字尽量少。每个标签放在它命名的事物上，用人口语，不要「Tests: pass」式标签。绝不字幕描述图画已展示的内容，也不在幻灯片间或下方文字里重复同一事实。
 
-Show what came of each thing the user asked for, and whether it is done, still running, failed, or not checked. Never show something done that still waits on the user. Show any bug found and fixed on the way. If a visible change has no screenshot, say so on its slide and name what changed on screen. Draw only from facts you have. Never invent a number, and never draw a screen you did not capture.
+展示用户所求每项的结果，以及 done、仍在跑、失败或未检查。绝不要展示仍等用户却标为完成的事。途中发现并修的 bug 要展示。可见变化无截图时，在该页说明并点名屏幕上改了什么。只根据已有事实绘制。绝不编造数字，绝不画未捕获的界面。
 
 ## Subtitles
 
-Give each slide one short subtitle line, about ten words, that says its point the way you would tell the user, from only what that slide shows. Say what the picture means rather than read out its labels. Put the subtitle in a strip below the slide, the same height on every slide and empty except for the subtitle, so it never covers the slide. Set it small, but readable when the video plays at chat size.
+每页一条短字幕，约十个词，用你会对用户讲的方式点出该页要义，且仅基于该页所展示内容。讲图画意味着什么，而不是念出标签。字幕放在幻灯片下方条带，每页同高，条带除字幕外留空，不遮挡幻灯片。字号偏小，但在聊天尺寸播放时可读。
 
 ## Render
 
-Render one silent landscape video, such as an mp4, with motion between slides. Every frame is the slide itself, edge to edge, above its subtitle strip. Make the frames from the slides, never by recording a screen, and burn each subtitle into its slide's frames so it stays on screen for the slide's whole hold. The hold is the time a slide is fully on screen, not counting the motion into or out of it. Hold each slide long enough to read the words it adds, at least one second for each three words. A slide adds its subtitle and each word that was not on the slide before it, including a label it changes. The first slide adds all its words. Words inside a screenshot do not count.
+渲染一条无声横屏视频（如 mp4），幻灯片之间有动效。每一帧是幻灯片本身，铺满上边，下方是字幕条。用幻灯片生成帧，不要录屏；把每条字幕烧进该页帧里，在整段 hold 期间始终在屏。hold 是幻灯片完全在屏上的时间，不含进出动效。每页 hold 要足够读完新增文字，至少每三个词一秒。一页新增的是其字幕以及相对上一页新出现的每个词，含改过的标签。第一页算全部文字。截图内的文字不计。
 
-Before you embed the video, check the rendered file. Look at one frame from each slide at chat size, and check that its subtitle is readable and covers nothing. Measure each hold by matching the file's frames to the slide, not with a still-frame detector, which counts the faint ends of a fade as still. Count the words each slide adds against its measured hold. Fix any slide you cannot read in that time, render again, and check again.
+嵌入视频前检查渲染文件。在聊天尺寸下看每页一帧，确认字幕可读且不遮挡。用文件的帧与幻灯片对齐来度量 hold，不要用静帧检测器——会把淡入淡出尾端算成静止。把每页新增词数与测得的 hold 对照。若有页在读不完的时间内，修好该页、重渲染再查。

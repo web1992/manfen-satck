@@ -1,43 +1,43 @@
 ---
 name: ketchup
-description: "Catch the user up on what changed in this chat since their last message, in plain words and small visuals. List every item waiting on them with what they need to decide it from the reply alone. Use for /ketchup."
+description: "用平实语言和少量图示，帮用户弄清自其上条消息以来本聊天里发生了什么变化。列出每件等他们拍板的事项，仅凭回复即可做决定。用于 /ketchup。"
 disable-model-invocation: true
 ---
 
 # Ketchup
 
-Catch the user up on what changed in this chat since the last message they wrote before `/ketchup`, and help them understand each change, not only where it stands. Then lay out every call waiting on them so they can make it from your reply alone. Notifications and subagent results are not their messages. Assume the user remembers their last message and nothing after it.
+帮用户弄清自其在 `/ketchup` 之前写的上一条消息以来，本聊天里发生了什么变化，并帮他们理解每项变更，而不只是现状。然后列出所有等他们拍板的事项，让他们仅凭你的回复就能做决定。通知与 subagent 结果不算用户消息。假定用户只记得自己的上一条消息，之后一概不记得。
 
-Use [`/bro`](../bro/SKILL.md)'s voice, not its task: plain words, short sentences, no jargon, like one person catching up another. Say what changed for the user, not how you did it. Say "the tests pass", not "CI is green". Leave out hashes, file paths, commands, build numbers, and test counts unless the user needs one to act. Call each PR, branch, or agent by a name the user would know, not by a label you invented. If a fact needs context to make sense, give the context or leave the fact out.
+用 [`/bro`](../bro/SKILL.md) 的口吻，不是它的任务：平实用语、短句、少行话，像一个人给另一个人补课。说对用户意味着什么变了，不说你怎么做的。说「测试通过了」，不说「CI 绿了」。除非用户需要才能行动，否则省略哈希、文件路径、命令、构建号和测试计数。每个 PR、分支或 agent 用用户会认的名字，不用你自造的标签。若事实需要上下文才说得通，给出上下文或省略该事实。
 
 ## Gather what changed
 
-Keep this turn read-only. Make visuals only from what you already have: do not change code, start an app or a job, or post anything. Collect your own work since that message, reports from subagents, and messages from anyone else in this chat. Check the current state of each PR, CI run, or agent this chat touched. Check each number you will show against the facts it comes from, and say so when you correct one.
+本轮只读。图示只基于已有材料：不改代码、不启应用或任务、不发帖。收集自那条消息以来你自己的工作、subagent 报告以及聊天里其他人的消息。核对本聊天触及的每个 PR、CI run 或 agent 的当前状态。核对你要展示的每个数字与其来源事实一致，纠正时说明。
 
-An action item is a call or step only the user can take, such as a product choice, an approval, an irreversible action, or access you lack. Include any still waiting on the user, even one raised before their last message. Work you can still do yourself is not an action item. Never make up a call to fill the reply. A step the user did not ask for and the work does not need is not an action item, unless it is irreversible and waiting on the user: give it one line and no visual.
+action item 是只有用户能走的呼叫或步骤，例如产品选择、审批、不可逆操作，或你没有权限的事。包含仍在等用户的，哪怕在时间上早于其上条消息。你自己还能做的工作不算 action item。不要编造呼叫凑满回复。用户没要、工作也不需要的一步不算 action item，除非它不可逆且等用户：给一行、不要配图。
 
-One call can cover many items, such as each PR in a set awaiting merge. For each item, collect its link, what it changes for users, the evidence behind your pick, its risk, and your pick. Write "unknown" for a fact the call needs that you do not know. Leave out a link you do not have.
+一次呼叫可覆盖多项，例如一组待合并的 PR。对每项收集：链接、对用户意味着什么变化、支持你推荐的证据、风险、你的推荐。呼叫需要而你不知道的事实写 "unknown"。没有的链接不要写。
 
 ## Write the reply
 
-Spend words on the calls, not on the story. Keep what happened under 100 words, not counting pictures, and shorter when less happened. Leave out work that changed nothing for the user. Give each item about 30 words. The reply grows with the number of items: two items need well under 150 words in all, not counting pictures, and thirty need far more. Never cut items or shrink them to stay under a word count: no count in place of a list, and no link in place of an item. A link can add depth, but the reply alone must be enough to decide.
+笔墨花在呼叫上，少花在故事上。发生的事控制在 100 词以内（不含图片），事少则更短。省略对用户无实质影响的工作。每项大约 30 词。回复随项数变长：两项合计远少于 150 词（不含图片），三十项则要长得多。不要为了凑字数删项或缩项：不能用计数代替列表，不能用链接代替一项。链接可加深理解，但仅凭回复须足以做决定。
 
-Open with one short sentence that names what waits on the user, or says nothing does. The action items give the detail. If nothing happened and nothing waits on the user, say so and stop.
+开头用一句短句点明用户在等什么，或说明没有。action items 给细节。若什么都没发生、也没有等用户的，说明后结束。
 
-Then show what happened, pictures first. Embed inline the screenshots and videos the work produced, then any diagram that explains a change. Then sum up in one short bullet per thing the user asked for: what came of it, and whether it is done, still running, failed, or not checked. Write each line the way you would say it out loud: "Search was slow from a missing index", not "Search review: done" or "Slow search: missing index". Name any bug found and fixed on the way. Each line must stay true when read alone. Never mark something done that still waits on the user, and leave out anything the action items say. Under the summary, give at most three short lines that change what the user knows or must do. Then name in one line any work left that you can do yourself.
+然后展示发生了什么，图在前。内嵌工作产出的截图与视频，再有解释变更的示意图。接着用一条短 bullet 概括用户要的每件事：结果如何，以及是 done、仍在跑、失败还是未检查。每行按你会脱口而出的方式写：「搜索慢是因为缺索引」，不要「Search review: done」或「Slow search: missing index」。途中发现并修掉的 bug 要点名。每行单独读仍须为真。不要标 done 若仍等用户；action items 里有的不要重复出现在摘要。摘要下最多三行短句，改变用户所知或所须做的。再用一行点明你自己还能做的工作。
 
-Then list the action items. Ask the call the user owns, such as merge, approve, or pick, and give your pick. A step you would take first goes in your pick. So does anything that must happen first, and anything that cannot be undone. Give the number or link of each PR, issue, or agent a call is about, also in a call between options.
+然后列 action items。问用户拥有的呼叫，例如 merge、approve 或 pick，并给出你的推荐。你会先做的步骤写进推荐；必须先发生的、以及不能撤销的，也写进推荐。每个呼叫涉及的 PR、issue 或 agent 给出编号或链接；选项之间的呼叫同样给出。
 
-Fit the shape to the call. A call about one item is one bullet: the call, your pick, what it changes for users, the evidence behind your pick, and its risk, with the item named once. When items share a call, write the call and your pick once, then give each item its own bullet, riskiest first: its link and name, what it changes for users, the evidence behind your pick, and its risk. Name an item's pick only where it differs from the call's. Give each item's risk even when it is low, such as "Low risk: only the colors change." Say what waiting costs only when it is more than a delay, such as a deadline or lost data.
+按呼叫形状排版。单项呼叫一条 bullet：呼叫、你的推荐、对用户的变化、支持推荐的证据、风险，项名只出现一次。多项共享同一呼叫时，呼叫与推荐写一次，再每项一条 bullet，风险高的在前：链接与名称、对用户的变化、支持推荐的证据、风险。仅当项的推荐与呼叫不同时才写项的推荐。即使风险低也写项的风险，例如「低风险：只改颜色。」仅当等待成本不止是拖延（截止日、数据丢失等）时才说等待的代价。
 
-For a call between options, give every option the work weighed, each with what it gets the user and what it costs, and the current state when there is one. Those costs are the call's risk, so add no separate risk line. When the screenshots above show the options, write each option's gain and cost under its screenshot.
+选项之间的呼叫，列出工作权衡过的每个选项：用户得到什么、代价是什么，有现状时写现状。代价即呼叫的风险，不再单独写风险行。若上文截图已展示选项，在每个截图下写该选项的收益与代价。
 
 ## Visuals
 
-A visual is a picture: a screenshot, a video, a Mermaid diagram, a chart or diagram from `/visualize`, or a generated image. A Markdown table is not a visual, even with before and after columns.
+visual 是图：截图、视频、Mermaid 图、`/visualize` 的图表或生成图。Markdown 表格不是 visual，哪怕有 before/after 列。
 
-When something is easier to grasp as a picture than as sentences, draw it: how a design or system works, a PR stack or dependency chain with each PR's state, a before and after of a fix, or options side by side. Never draw a status list, a list of action items, or boxes with nothing connecting them. Never give a fact twice, in text or across visuals.
+当图比句子更好懂时再画：设计或系统如何工作、PR 栈或依赖链及各 PR 状态、修复前后对比、选项并排。不要画状态列表、action item 列表，或没有连线的框。同一事实不要在正文与图里各说一遍。
 
-Keep each visual small enough to read at a glance: at most six boxes, with at most eight words in each. Write labels as plain words a person would say, not tags like "Tests: pass". A fact that needs a sentence belongs in the text, or nowhere.
+每张图一眼能读完：最多六个框，每框最多八个词。标签用人会说的话，不要「Tests: pass」这类 tag。需要整句说清的事实放在正文，或省略。
 
-Embed screenshots and videos inline when the change is visible, not only as links. If a visible change has none, mark its summary line "No screenshot yet," and say there what changed on screen. Draw diagrams and charts from facts you have: a Mermaid diagram for how things connect and a `/visualize` chart for numbers. Never invent a number, and never draw or generate a picture of a screen you did not capture. Link only artifacts that exist.
+变更可见时内嵌截图与视频，不要只给链接。可见变更却没有图时，摘要行标「No screenshot yet」，并在那里说明屏幕上变了什么。用已有事实画示意图与图表：Mermaid 画连接关系，`/visualize` 画数字。不要编造数字，不要画或生成你没截到的屏幕。只链接存在的 artifact。

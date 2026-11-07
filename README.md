@@ -1,95 +1,95 @@
 # manfen-satck
 
-Agent skills extracted from pstack. Each skill is a `skills/<name>/SKILL.md` file with YAML frontmatter (`name`, `description`), plus optional references, scripts and assets loaded on demand.
+从 pstack 提取的 agent skill 集合。每个 skill 是一个 `skills/<name>/SKILL.md` 文件，带 YAML frontmatter（`name`、`description`），并可附带按需加载的 references、scripts 和资源文件。
 
-**58 skills** in total.
+共 **58 个 skill**。
 
 ## Workflow & orchestration
 
-| Skill | What it does |
+| Skill | 作用 |
 | --- | --- |
-| [`architect`](skills/architect/SKILL.md) | Sketch types, signatures, and module structure before code, then stay in the loop while implementation fills in. Use for /architect, 'architect this', 'design this', or non-trivial work where jumping to code would lock in the wrong shape. |
-| [`arena`](skills/arena/SKILL.md) | Spawn N parallel candidates at the same task, pick a base, graft the strongest parts of the losers into it. Use for /arena, 'arena this', 'throw it in the arena', or when one attempt at a non-trivial artifact would lock in the wrong shape. |
-| [`figure-it-out`](skills/figure-it-out/SKILL.md) | Design an auditable playbook when no narrower one fits: a large migration, an ambitious multi-part change, or work a human reviews after stepping away. Scales rigor to the task, runs a hypothesis loop, and logs decisions. Use for /figure-it-out or 'figure it out'. |
-| [`swarm`](skills/swarm/SKILL.md) | Fan out N parallel workers, drain them, and return one report. Use for /swarm, 'swarm this', or parallel coverage, races, gauntlets, and exploration. |
-| [`show-me-your-work`](skills/show-me-your-work/SKILL.md) | Keep a reviewable decision trail for long-running or unattended work: a TSV log with one row per decision (what, why, evidence, result). Local by default; commit it when a reviewer needs the trail to trust the result. Use for /show-me-your-work, autonomous or multi-phase runs, or work a human reviews after stepping away. |
-| [`sharpen`](skills/sharpen/SKILL.md) | Make a task deeper, not bigger, then rewrite the prompt. Use for /sharpen. |
-| [`recall`](skills/recall/SKILL.md) | Reconstruct your recent working context from your own chat history, live state, and the shared record (user reports, prior fixes, incidents), then hand back a tight current-state brief. Use for 'recall my work on X', 'catch me up', 'what have I been working on', 'where did I leave off', before starting or resuming work. |
-| [`reflect`](skills/reflect/SKILL.md) | Spawn three parallel review subagents over the active transcript, surface learnings, and route each to a concrete edit on an existing skill. Use when the user says reflect. |
-| [`correct`](skills/correct/SKILL.md) | Find the mistakes agents keep repeating in this repo and make each one impossible. Try architecture first, then types, then a lint whose error names the fix, then a test, and write docs last. Prove each check fails on a real past mistake. Repeat this each time the operator corrects you. Use for /correct. |
+| [`architect`](skills/architect/SKILL.md) | 在写代码前先勾勒类型、签名与模块结构，并在实现填入时保持参与。用于 /architect、'architect this'、'design this'，或非平凡工作中直接写代码会锁死错误形态时。 |
+| [`arena`](skills/arena/SKILL.md) | 对同一任务并行 spawn N 个候选方案，选定基线，再把失败方中最强的部分嫁接到基线上。用于 /arena、'arena this'、'throw it in the arena'，或当单次尝试非平凡产物会锁死错误形态时。 |
+| [`figure-it-out`](skills/figure-it-out/SKILL.md) | 在更窄的 playbook 都不匹配时设计可审计 playbook：大型迁移、野心大的多段改动，或人离开后再审的工作。按任务缩放严谨度，跑假设循环并记录决策。用于 /figure-it-out 或「figure it out」。 |
+| [`swarm`](skills/swarm/SKILL.md) | 拉起 N 个并行 worker，收齐结果后输出一份报告。用于 /swarm、「swarm this」，或并行覆盖、race、gauntlet 与探索。 |
+| [`show-me-your-work`](skills/show-me-your-work/SKILL.md) | 为长时间或无人值守的工作保留可审查的决策轨迹：TSV 日志，每个决策一行（做了什么、为何、证据、结果）。默认仅本地；当审查者需要轨迹才能信任结果时再 commit。用于 /show-me-your-work、自主或多阶段运行，或用户离开后再来审查的工作。 |
+| [`sharpen`](skills/sharpen/SKILL.md) | 让任务更深而不是更大，然后重写 prompt。用于 /sharpen。 |
+| [`recall`](skills/recall/SKILL.md) | 从自有聊天记录、现场状态与共享记录（用户反馈、既往修复、事故）重建近期工作上下文，交回紧凑的当前状态摘要。用于 'recall my work on X'、'catch me up'、'what have I been working on'、'where did I leave off'，在开始或恢复工作前。 |
+| [`reflect`](skills/reflect/SKILL.md) | 对当前 transcript 并行 spawn 三个 review subagent，提炼可沉淀经验，并把每条路由到既有 skill 上的具体编辑。用户说 reflect 时使用。 |
+| [`correct`](skills/correct/SKILL.md) | 找出 agent 在本仓库反复犯的错，并让每类都不可能再犯。优先架构，其次类型，再是错误信息指明改法的 lint，然后测试，文档最后写。用真实历史错误证明每项检查会失败。操作者每次纠正你时重复此流程。用于 /correct。 |
 | [`tdd`](skills/tdd/SKILL.md) | 仅在用户明确要求 TDD、失败测试或回归测试时使用，或当 bug 有明显且廉价的本地测试目标时使用。测试路径不清、成本高、偏集成或未请求时跳过。 |
-| [`automate-me`](skills/automate-me/SKILL.md) | Use for \"automate me\", \"create/update/refresh my -mode skill\", \"turn/capture my preferences or working style into a skill\", or wanting agents to follow how the user works. Drafts or revises a personal -mode skill via create-skill + unslop, optionally pulling fresh evidence from recent transcripts. |
+| [`automate-me`](skills/automate-me/SKILL.md) | 用于「automate me」「创建/更新/刷新我的 -mode skill」「把偏好或工作方式固化成 skill」，或希望 agent 按用户方式工作。通过 create-skill + unslop 起草或修订个人 -mode skill，可选从近期 transcript 拉新证据。 |
 
 ## Review & verification
 
-| Skill | What it does |
+| Skill | 作用 |
 | --- | --- |
-| [`blast-radius`](skills/blast-radius/SKILL.md) | Find what a change could break somewhere else before it ships, beyond the diff, and prove the one fact it's safe because of by running real code instead of writing it up. Use for 'blast radius of X', 'what could this break', or reviewing a small diff you don't trust. |
-| [`interrogate`](skills/interrogate/SKILL.md) | Use for \"interrogate\", \"adversarial review\", \"multi-model review\", \"challenge this\", \"stress test this code\", \"find blind spots\", or \"tear this apart\". Adversaries try to break a change or design, and only findings proven by a run survive. |
-| [`benchmark-checklist`](skills/benchmark-checklist/SKILL.md) | Vet a perf measurement (limiter, tuning, limits, errors, repeatability, relevance, and whether the work happened) before you report or act on it. Use when you run a benchmark or report a speedup or regression you measured. |
-| [`create-verification-skill`](skills/create-verification-skill/SKILL.md) | Generate a project-local verification skill that drives your app the way a user does — any language, framework, or platform. Use for /create-verification-skill, \"make a control skill for this repo\", or when a project has no scripted way to prove UI/CLI/service behavior. |
-| [`maintain-verification-skill`](skills/maintain-verification-skill/SKILL.md) | Periodic pass that keeps a project's verification skill and feature map honest: parallel source readers per feature, one live session driving every feature, at most one PR of proven corrections. Use for /maintain-verification-skill or \"audit the verify skill\". |
-| [`create-formal-verification-skill`](skills/create-formal-verification-skill/SKILL.md) | Generate a project-local skill that formally verifies the code where a bug costs the most and tests reach the least, in any language, with whichever verification tool fits. Use for /create-formal-verification-skill, \"model-check this race\", \"prove this invariant\", or when concurrency, retries, state machines, parsers, or unsafe code need more than tests. |
-| [`maintain-formal-verification-skill`](skills/maintain-formal-verification-skill/SKILL.md) | Bring a project's formal verification back in line with the code after the code changes: find the commits that touched verified code, update the model, harness, or properties to describe the code as it is now, rerun, and say whether each failure is drift in the verification or a bug in the code. Use for /maintain-formal-verification-skill, \"is the model still true to the code\", or after merges and refactors that touched verified code without rechecking it. |
-| [`statechart`](skills/statechart/SKILL.md) | Check a TLA+ model of a system that moves between states, such as a product flow, a protocol, or a service, and draw it as a Mermaid statechart. The report gives the shortest path to each state that breaks a rule. Use for /statechart, or to show a bug as a path through states. |
-| [`no-comments`](skills/no-comments/SKILL.md) | Spawn Comment Sicko, fix accepted findings, and offer encodings for claimed constraints. |
+| [`blast-radius`](skills/blast-radius/SKILL.md) | 在交付前找出变更可能在别处搞坏什么——超出 diff 范围——并通过跑真实代码而非写说明来证明它安全所依赖的那一条事实。用于「X 的 blast radius」「这可能搞坏什么」，或不信任的小 diff 审查。 |
+| [`interrogate`](skills/interrogate/SKILL.md) | 用于「interrogate」「对抗式 review」「多模型 review」「challenge this」「stress test this code」「找盲点」或「tear this apart」。对手试图击穿变更或设计，仅在一次 run 能证明的发现保留。 |
+| [`benchmark-checklist`](skills/benchmark-checklist/SKILL.md) | 在汇报或据此行动前，审查性能测量（limiter、调优、上限、错误、可重复性、相关性、工作是否真的发生）。在跑 benchmark 或汇报测得的加速/回归时使用。 |
+| [`create-verification-skill`](skills/create-verification-skill/SKILL.md) | 生成项目本地的 verification skill，像用户一样驱动应用——任意语言、框架或平台。用于 /create-verification-skill、「给这个仓库做控制 skill」，或项目没有脚本化方式证明 UI/CLI/服务行为时。 |
+| [`maintain-verification-skill`](skills/maintain-verification-skill/SKILL.md) | 周期性维护：让项目的 verification skill 与 feature map 保持可信——按 feature 并行只读读源码、一次 live 会话驱动全部 feature，最多一个 PR 承载已证实的修正。用于 /maintain-verification-skill 或「审计 verify skill」。 |
+| [`create-formal-verification-skill`](skills/create-formal-verification-skill/SKILL.md) | 生成项目本地 skill，在 bug 代价最高、测试最难触及之处，用合适验证工具对任意语言的代码做形式化验证。用于 /create-formal-verification-skill、「model-check this race」、「prove this invariant」，或当并发、重试、状态机、解析器、unsafe 代码需要超出测试的保障时。 |
+| [`maintain-formal-verification-skill`](skills/maintain-formal-verification-skill/SKILL.md) | 在代码变更后把项目的形式化验证与代码重新对齐：找出改动过已验证代码的 commit，更新 model、harness 或 property 以描述当前代码，重跑验证，并说明每次失败是验证漂移还是代码 bug。用于 /maintain-formal-verification-skill、「model 是否仍忠实于代码」，或在合并与重构触及已验证代码却未复查时使用。 |
+| [`statechart`](skills/statechart/SKILL.md) | 对会在状态间迁移的系统（如产品流程、协议或服务）做 TLA+ model 检查，并绘制成 Mermaid statechart。报告给出到达各违反规则状态的最短路径。用于 /statechart，或把 bug 展示为穿越状态的路径。 |
+| [`no-comments`](skills/no-comments/SKILL.md) | 拉起 Comment Sicko，处理已接受的发现，并对声称的约束提供编码方案。 |
 
 ## Understanding & explanation
 
-| Skill | What it does |
+| Skill | 作用 |
 | --- | --- |
 | [`how`](skills/how/SKILL.md) | 用于「X 怎么工作」、改代码前的走读，以及归属 / 分层问题（「该放哪」「哪个包管这个」「这是不是正确的层」）。解释子系统架构、运行时流程、上手心智模型。动机类问题用 why。 |
-| [`why`](skills/why/SKILL.md) | Use for 'why does X work this way', 'why we picked Y', design rationale, regressions, postmortems, or data-backed thresholds. Discovers available MCPs and queries each evidence category (source control, issue tracker, long-form docs, real-time chat, infrastructure observability, error tracking, product analytics warehouse) in parallel, then returns a cited read on decisions and tradeoffs. Use how for runtime behavior. |
-| [`teach`](skills/teach/SKILL.md) | Explain a body of work plainly so a person actually understands it. Runs the `how` and `why` skills and weaves what they find into one clear explanation. Use for 'teach me this', 'help me really understand X', 'explain this change or subsystem to me'. |
-| [`bro`](skills/bro/SKILL.md) | Restate the last message in plain human language, with no jargon. |
-| [`in-your-own-words`](skills/in-your-own-words/SKILL.md) | Restate in your own words what you think the user's goals are and what problem they're trying to solve. Use for /in-your-own-words. |
-| [`ketchup`](skills/ketchup/SKILL.md) | Catch the user up on what changed in this chat since their last message, in plain words and small visuals. List every item waiting on them with what they need to decide it from the reply alone. Use for /ketchup. |
-| [`ketchup-video`](skills/ketchup-video/SKILL.md) | Catch the user up like /ketchup, with a short subtitled video of slides for what happened and the waiting calls as text under it. Use for /ketchup-video. |
+| [`why`](skills/why/SKILL.md) | 用于「为什么 X 是这样实现的」「为什么选 Y」、设计理由、回归、事后复盘或数据支撑的阈值。发现可用 MCP，并行查询各证据类别（源码管理、issue tracker、长文档、即时聊天、基础设施可观测性、错误追踪、产品分析数仓），再返回带引用的决策与权衡说明。运行时行为用 how。 |
+| [`teach`](skills/teach/SKILL.md) | 用平实语言解释一段工作，让人真正理解。运行 `how` 与 `why` skill，将其发现编织成一份清晰说明。用于「教我懂这个」「帮我真正理解 X」「向我解释这次变更或子系统」。 |
+| [`bro`](skills/bro/SKILL.md) | 用大白话复述上一条消息，不要术语。 |
+| [`in-your-own-words`](skills/in-your-own-words/SKILL.md) | 用自己的话复述你认为用户的目标以及他们在解决的问题。用于 /in-your-own-words。 |
+| [`ketchup`](skills/ketchup/SKILL.md) | 用平实语言和少量图示，帮用户弄清自其上条消息以来本聊天里发生了什么变化。列出每件等他们拍板的事项，仅凭回复即可做决定。用于 /ketchup。 |
+| [`ketchup-video`](skills/ketchup-video/SKILL.md) | 像 /ketchup 一样帮用户赶上进度，用带字幕的短幻灯片视频展示发生了什么，等待的 call 以文字放在视频下方。用于 /ketchup-video。 |
 
 ## Writing & style
 
-| Skill | What it does |
+| Skill | 作用 |
 | --- | --- |
-| [`unslop`](skills/unslop/SKILL.md) | Cut AI tells from any writing. |
-| [`technical-writing`](skills/technical-writing/SKILL.md) | Layered technical-writing standard: Diátaxis structure, Google developer style sentences, STE instruction rules, Global English syntax. Use for /technical-writing or when writing or reviewing docs, RFCs, readmes, PR descriptions, or commit messages. |
-| [`poteto-mode`](skills/poteto-mode/SKILL.md) | poteto's agent style for concise, detailed responses, deliberate subagents, unslopped prose, simple code, and verified work. Use for poteto, /poteto-mode, or requests to work in this style. |
-| [`poteto-help`](skills/poteto-help/SKILL.md) | Guides users through pstack setup, /poteto-mode, and picking the skill, playbook, or principle for a task. Type /poteto-help with a question. |
+| [`unslop`](skills/unslop/SKILL.md) | 从任意文稿中剔除 AI 写作痕迹。 |
+| [`technical-writing`](skills/technical-writing/SKILL.md) | 分层技术写作标准：Diátaxis 结构、Google 开发者风格句式、STE 指令规则、Global English 语法。用于 /technical-writing，或在撰写或审阅文档、RFC、readme、PR 描述、commit 消息时使用。 |
+| [`poteto-mode`](skills/poteto-mode/SKILL.md) | poteto 的 agent 风格：回复简洁细致、审慎使用 subagent、散文去 slop、代码从简、工作可验证。用于 poteto、/poteto-mode，或要求以本风格工作时。 |
+| [`poteto-help`](skills/poteto-help/SKILL.md) | 引导用户完成 pstack 设置、/poteto-mode 使用，以及为任务挑选 skill、playbook 或 principle。在聊天里输入 /poteto-help 并带上问题。 |
 
 ## Setup & language
 
-| Skill | What it does |
+| Skill | 作用 |
 | --- | --- |
-| [`setup-pstack`](skills/setup-pstack/SKILL.md) | Configure which models pstack uses per role and at what reasoning budget. Detects your available models and writes an always-applied rule that overrides the skill defaults. Use for /setup-pstack, "configure pstack models", "pstack budget", or changing pstack's model choices. |
-| [`typescript-best-practices`](skills/typescript-best-practices/SKILL.md) | TypeScript best practices. Use when reading or editing any .ts or .tsx file. |
-| [`make-bot-ui`](skills/make-bot-ui/SKILL.md) | Use when building a custom UI (page, dashboard, buttons) that should wake a Grok Bot over a webhook, when the user must provide a webhook sender key, or when exposing that UI on Tailscale. |
+| [`setup-pstack`](skills/setup-pstack/SKILL.md) | 配置 pstack 各角色使用的模型及推理预算。检测你可用的模型，并写入一条始终应用的规则以覆盖 skill 默认值。用于 /setup-pstack、「configure pstack models」、「pstack budget」，或更改 pstack 的模型选择。 |
+| [`typescript-best-practices`](skills/typescript-best-practices/SKILL.md) | TypeScript 最佳实践。在阅读或编辑任何 .ts 或 .tsx 文件时使用。 |
+| [`make-bot-ui`](skills/make-bot-ui/SKILL.md) | 在构建应通过 webhook 唤醒 Grok Bot 的自定义 UI（页面、仪表盘、按钮）时使用；当用户须提供 webhook sender key 时；或将该 UI 暴露在 Tailscale 上时使用。 |
 
 ## Principles
 
-Small always-on principles: each states the situation that triggers it and the move it prescribes.
+小而常驻的原则：每条都写明触发它的情境和对应的动作。
 
-| Skill | What it does |
+| Skill | 作用 |
 | --- | --- |
-| [`principle-attack-the-premise`](skills/principle-attack-the-premise/SKILL.md) | Apply when two or more fixes that share one premise have failed the same gate. Write the premise down and test it directly before you write another fix that assumes it. |
-| [`principle-boundary-discipline`](skills/principle-boundary-discipline/SKILL.md) | Apply when wiring validation, error handling, or framework adapters. Concentrate guards at system boundaries (CLI, config, network, external APIs); trust internal types and keep business logic in pure functions. |
-| [`principle-build-the-lever`](skills/principle-build-the-lever/SKILL.md) | Apply to any non-trivial work, not just bulk work: edits, migrations, analyses, checks. Build the tool that does it or proves it (codemod, script, generator, or a skill your subagents follow) instead of working by hand. The tool is the artifact a reviewer can rerun. |
-| [`principle-encode-lessons-in-structure`](skills/principle-encode-lessons-in-structure/SKILL.md) | Apply when you catch yourself writing the same instruction a second time, or notice a recurring correction. Encode the rule as a lint, metadata flag, runtime check, or script instead of more text. |
-| [`principle-exhaust-the-design-space`](skills/principle-exhaust-the-design-space/SKILL.md) | Apply when facing a novel UI interaction or architectural decision with no precedent in the codebase. Build 2-3 competing prototypes and compare side by side before committing. |
-| [`principle-experience-first`](skills/principle-experience-first/SKILL.md) | Apply when product, UX, or feature-scope tradeoffs come up. Choose user delight over implementation convenience; ship fewer polished features over more rough ones. |
-| [`principle-explain-the-number`](skills/principle-explain-the-number/SKILL.md) | Apply before you measure, and before you trust, report, or act on a number you measured: a speedup, a regression, a throughput, a latency, or an eval result. Find what limits it, and rule out that it measured something other than the work you think. |
-| [`principle-fix-root-causes`](skills/principle-fix-root-causes/SKILL.md) | Apply when debugging. Trace each symptom back to the first place the system went wrong and fix it there. A guard is a fix only when the state it handles is legitimate. |
-| [`principle-foundational-thinking`](skills/principle-foundational-thinking/SKILL.md) | Apply before writing logic: choosing core types and data structures, sequencing scaffold-vs-feature work, asking what concurrent actors share. Get the data structures right so downstream code becomes obvious. |
-| [`principle-guard-the-context-window`](skills/principle-guard-the-context-window/SKILL.md) | Apply when context is filling up: large outputs, long files, repeated reads, fan-out planning. Route bulk to subagents; keep summaries in the main thread, not raw payloads. |
-| [`principle-laziness-protocol`](skills/principle-laziness-protocol/SKILL.md) | Apply when refactoring, evaluating diff size, or tempted to add abstractions, layers, or signal threading. Bias toward deletion and the smallest change that solves the problem. |
-| [`principle-make-operations-idempotent`](skills/principle-make-operations-idempotent/SKILL.md) | Apply when designing commands, lifecycle steps, or processing loops that run amid crashes, restarts, and retries. Converge to the same end state regardless of partial prior runs. |
-| [`principle-migrate-callers-then-delete-legacy-apis`](skills/principle-migrate-callers-then-delete-legacy-apis/SKILL.md) | Apply when introducing a new internal API while old callers still exist. Migrate callers and delete the old API in the same wave instead of preserving compatibility layers. |
-| [`principle-minimize-reader-load`](skills/principle-minimize-reader-load/SKILL.md) | Apply when reviewing or shaping code that's hard to trace. Count layers between question and answer, and hidden state in the reader's head; collapse one-caller wrappers and shrink mutable scope. |
-| [`principle-model-the-domain`](skills/principle-model-the-domain/SKILL.md) | Apply when writing stateful logic, or when code branches a lot or repeats a shape assumption across files. |
-| [`principle-never-block-on-the-human`](skills/principle-never-block-on-the-human/SKILL.md) | Apply when tempted to ask 'should I do X?' on reversible work. |
-| [`principle-outcome-oriented-execution`](skills/principle-outcome-oriented-execution/SKILL.md) | Apply during planned rewrites and migrations with explicit phase boundaries. Converge on the target architecture; don't preserve smooth intermediate states with throwaway compatibility code. |
-| [`principle-prove-it-works`](skills/principle-prove-it-works/SKILL.md) | Apply after completing a task, before declaring done. Verify against the real artifact (run the feature, read the actual value, inspect the diff), not a proxy, self-report, or 'it compiles. |
-| [`principle-redesign-from-first-principles`](skills/principle-redesign-from-first-principles/SKILL.md) | Apply when integrating a new requirement into an existing design. |
-| [`principle-separate-before-serializing-shared-state`](skills/principle-separate-before-serializing-shared-state/SKILL.md) | Apply when concurrent actors might write to the same file, branch, key, or state object. Eliminate the sharing first; serialize structurally only when one shared writer is a real invariant. |
-| [`principle-sequence-verifiable-units`](skills/principle-sequence-verifiable-units/SKILL.md) | Apply to multi-step work (sweeps, migrations, runs of similar edits) and to how you stack commits and PRs. Break work into small units that each end in a verifiable state, check each before the next, and order delivery so the sequence proves itself to a reviewer. |
-| [`principle-subtract-before-you-add`](skills/principle-subtract-before-you-add/SKILL.md) | Apply when sequencing an addition, refactor, or rewrite. Remove dead code, redundant validators, and stub references first, then build on the simpler base. |
-| [`principle-test-behavior-not-implementation`](skills/principle-test-behavior-not-implementation/SKILL.md) | Apply when you write, change, or keep a test. Assert what the code's users can observe, so that the test fails when that behavior breaks and keeps passing when only the internals change. |
-| [`principle-type-system-discipline`](skills/principle-type-system-discipline/SKILL.md) | Apply when designing types, reviewing a function signature, or writing code in any statically-typed language. Make illegal states unrepresentable, brand semantic primitives, parse external data at boundaries, exhaust variants, derive from authoritative schemas. |
+| [`principle-attack-the-premise`](skills/principle-attack-the-premise/SKILL.md) | 当两个及以上共享同一前提的修复在同一关卡失败时适用。写下前提并直接检验，再写下一个仍假设它的修复。 |
+| [`principle-boundary-discipline`](skills/principle-boundary-discipline/SKILL.md) | 在接 validation、错误处理或框架 adapter 时适用。把 guard 集中在系统边界（CLI、config、网络、外部 API）；内部信任类型，业务逻辑放在纯函数里。 |
+| [`principle-build-the-lever`](skills/principle-build-the-lever/SKILL.md) | 适用于任何非琐碎工作，不限于批量：编辑、迁移、分析、检查。造工具来执行或证明（codemod、script、generator，或 subagent 遵循的 skill），而非手做。工具是 reviewer 可重跑的产物。 |
+| [`principle-encode-lessons-in-structure`](skills/principle-encode-lessons-in-structure/SKILL.md) | 当你发现自己在写第二遍相同指令，或注意到反复出现的纠正时适用。把规则编码为 lint、metadata flag、runtime 检查或 script，而不是再加文字。 |
+| [`principle-exhaust-the-design-space`](skills/principle-exhaust-the-design-space/SKILL.md) | 面对代码库无先例的新 UI 交互或架构决策时适用。先造 2–3 个竞争原型并排对比，再 commit。 |
+| [`principle-experience-first`](skills/principle-experience-first/SKILL.md) | 产品、UX 或功能范围权衡出现时适用。用户愉悦优先于实现便利；少而精胜过多而糙。 |
+| [`principle-explain-the-number`](skills/principle-explain-the-number/SKILL.md) | 在度量之前，以及信任、汇报或依据某数字行动之前适用：加速比、回归、吞吐、延迟或 eval 结果。找出限制因素，并排除测到的并非你以为的工作。 |
+| [`principle-fix-root-causes`](skills/principle-fix-root-causes/SKILL.md) | debug 时适用。把每个症状追溯到系统首次出错之处并在那里修。guard 仅在所处理状态合法时才算修复。 |
+| [`principle-foundational-thinking`](skills/principle-foundational-thinking/SKILL.md) | 写逻辑之前适用：选核心类型与数据结构、编排 scaffold 与 feature 顺序、问并发 actor 共享什么。先把数据结构做对，下游代码自然会清晰。 |
+| [`principle-guard-the-context-window`](skills/principle-guard-the-context-window/SKILL.md) | context 将满时适用：大输出、长文件、重复读取、fan-out 规划。大块交给 subagent；主线程留摘要，不要原始 payload。 |
+| [`principle-laziness-protocol`](skills/principle-laziness-protocol/SKILL.md) | 重构、评估 diff 大小，或想加抽象、层、信号穿线时适用。偏向删除与解决问题的最小改动。 |
+| [`principle-make-operations-idempotent`](skills/principle-make-operations-idempotent/SKILL.md) | 设计在 crash、重启与重试中运行的命令、生命周期步骤或处理循环时适用。无论先前 run 是否部分完成，都收敛到同一终态。 |
+| [`principle-migrate-callers-then-delete-legacy-apis`](skills/principle-migrate-callers-then-delete-legacy-apis/SKILL.md) | 在引入新内部 API 而旧调用方仍存在时采用。在同一波迁移中迁完调用方并删除旧 API，而不是保留兼容层。 |
+| [`principle-minimize-reader-load`](skills/principle-minimize-reader-load/SKILL.md) | 在审阅或整理难以追迹的代码时采用。统计从问题到答案之间的层数，以及读者脑中须维持的隐藏状态；折叠仅单处调用的 wrapper，缩小可变作用域。 |
+| [`principle-model-the-domain`](skills/principle-model-the-domain/SKILL.md) | 在编写有状态逻辑，或代码分支很多、在多个文件中重复同一形状假设时采用。 |
+| [`principle-never-block-on-the-human`](skills/principle-never-block-on-the-human/SKILL.md) | 在可逆工作上想要问「我该做 X 吗？」时采用。 |
+| [`principle-outcome-oriented-execution`](skills/principle-outcome-oriented-execution/SKILL.md) | 在有明确阶段边界的计划内重写与迁移过程中采用。收敛到目标架构；不要用一次性兼容代码维持顺滑的中间态。 |
+| [`principle-prove-it-works`](skills/principle-prove-it-works/SKILL.md) | 在完成任务之后、声明完成之前采用。对照真实产物验证（跑功能、读实际值、看 diff），而非代理指标、自述或「能编译」。 |
+| [`principle-redesign-from-first-principles`](skills/principle-redesign-from-first-principles/SKILL.md) | 把新需求并入既有设计时采用。 |
+| [`principle-separate-before-serializing-shared-state`](skills/principle-separate-before-serializing-shared-state/SKILL.md) | 当并发 actor 可能写入同一文件、分支、键或状态对象时采用。先消除共享；仅当单一共享写入方是真实不变量时，才在结构上串行化。 |
+| [`principle-sequence-verifiable-units`](skills/principle-sequence-verifiable-units/SKILL.md) | 用于多步工作（sweep、迁移、同类编辑批量执行）以及 commit、PR 的叠放方式。把工作拆成以可验证状态收尾的小单元，每步先绿再进下一步，并按能让 reviewer 自行重放的顺序交付。 |
+| [`principle-subtract-before-you-add`](skills/principle-subtract-before-you-add/SKILL.md) | 在排期新增、重构或重写时采用。先移除死代码、冗余 validator 与 stub 引用，再在更简基座上构建。 |
+| [`principle-test-behavior-not-implementation`](skills/principle-test-behavior-not-implementation/SKILL.md) | 在编写、修改或保留测试时采用。断言代码用户可观察到的行为，使行为坏时测试失败、仅内部改动时仍通过。 |
+| [`principle-type-system-discipline`](skills/principle-type-system-discipline/SKILL.md) | 在设计类型、审阅函数签名或在任何静态类型语言中写代码时采用。让非法状态无法表示、为语义原语加 brand、在边界解析外部数据、穷尽 variant、从权威 schema 推导。 |

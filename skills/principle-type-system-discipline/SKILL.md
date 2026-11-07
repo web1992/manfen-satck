@@ -1,13 +1,13 @@
 ---
 name: principle-type-system-discipline
-description: "Apply when designing types, reviewing a function signature, or writing code in any statically-typed language. Make illegal states unrepresentable, brand semantic primitives, parse external data at boundaries, exhaust variants, derive from authoritative schemas."
+description: "在设计类型、审阅函数签名或在任何静态类型语言中写代码时采用。让非法状态无法表示、为语义原语加 brand、在边界解析外部数据、穷尽 variant、从权威 schema 推导。"
 disable-model-invocation: true
 ---
 
 # Type System Discipline
 
-Make the compiler reject impossible states, mismatched primitives, and unhandled variants. Prefer defining errors and special cases out of existence over proliferating handlers. For TypeScript syntax, see the `typescript-best-practices` skill.
+让编译器拒绝不可能的状态、不匹配的原语以及未处理的 variant。优先通过定义把错误与特例排除在表示之外，而不是泛滥 handler。TypeScript 语法见 `typescript-best-practices` skill。
 
-- **Brand semantic primitives.** `UserId` and `OrderId` are strings underneath but should not be interchangeable. Give each its own type, such as a branded intersection in TypeScript or a newtype elsewhere. Validate once at creation, trust the type downstream. If two arguments share a primitive type but mean different things, brand them.
-- **External data is untyped until parsed.** RPC payloads, JSON, IPC messages, CLI args, config files, environment variables, database rows. Have a parse function at every boundary that turns unstructured input into the typed model. The **boundary-discipline** principle skill says where to put validation.
-- **Derive types from authoritative schemas.** When a protocol buffer, OpenAPI spec, GraphQL schema, database migration, design-token file, or another file owns a shape, derive from it instead of hand-rolling a parallel type. See the **encode-lessons-in-structure** principle skill.
+- **Brand 语义原语。** `UserId` 与 `OrderId` 底层都是 string，但不应互换。各给独立类型，例如在 TypeScript 中用 branded intersection，在其他语言中用 newtype。创建时校验一次，下游信任类型。若两个参数共享同一原语类型但语义不同，给它们 brand。
+- **外部数据在解析前视为无类型。** RPC payload、JSON、IPC 消息、CLI 参数、配置文件、环境变量、数据库行。在每个边界用 parse 函数把非结构化输入转成类型化模型。**boundary-discipline** principle skill 说明校验应放在哪。
+- **从权威 schema 推导类型。** 当 protocol buffer、OpenAPI spec、GraphQL schema、数据库 migration、design-token 文件或其他文件拥有形状时，从其推导，不要手写平行类型。见 **encode-lessons-in-structure** principle skill。

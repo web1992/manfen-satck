@@ -1,21 +1,21 @@
 ---
 name: principle-fix-root-causes
-description: "Apply when debugging. Trace each symptom back to the first place the system went wrong and fix it there. A guard is a fix only when the state it handles is legitimate."
+description: "debug 时适用。把每个症状追溯到系统首次出错之处并在那里修。guard 仅在所处理状态合法时才算修复。"
 disable-model-invocation: true
 ---
 
 # Fix Root Causes
 
-When debugging, fix the fault, not the place where it surfaced. The symptom is where a wrong state became visible. The root cause is the first place the system did something it should not do, or failed to handle a state it should handle.
+debug 时修故障，不修它冒出来的地方。症状是错误状态变得可见之处。根因是系统首次做了不该做的事，或未处理本该处理的状态之处。
 
-**Why:** A symptom fix hides the evidence and leaves the fault free to surface somewhere else. Each one makes the system harder to reason about, because the code now carries a workaround for a bug that nobody named.
+**原因：** 症状修复掩盖证据，让故障在其他地方继续冒头。每一处都让系统更难推理，因为代码背着没人点名的 bug 的 workaround。
 
-**Pattern:**
-- Reproduce first.
-- Ask "why" at each step until the answer is a wrong decision in the code, not a consequence of an earlier one.
-- When stuck, instrument. Read the actual error and the actual state. Do not guess.
-- Ask whether the state that triggered the symptom is legitimate. If the system may be in that state, the code that broke on it is the root cause, and handling the state there is the fix. If the state should never exist, a check where it broke hides the bug. Find what produced the state. Guards, retries, swallowed errors, clamped values, and discarded state are the usual ways to hide a bug.
-- When something fails only after a restart, suspect persisted state first: config files, caches, lock files, serialized state.
-- Check for the pattern, not just the instance. Find every place with the same fault and fix them all.
-- If a workaround needs a paragraph-long comment to justify it, the code is wrong. Fix the code, not the comment.
-- If the deciding fact took a deep dig to find, propose the cheap, always-on signal that would have shown it at first look.
+**模式：**
+- 先复现。
+- 每一步问「why」，直到答案是代码里的错误决策，而非更早决策的后果。
+- 卡住时加 instrumentation。读真实错误与真实状态。不要猜。
+- 问触发症状的状态是否合法。若系统可能处于该状态，在它上面崩掉的代码就是根因，在那里处理该状态才是修复。若状态本不应存在，在崩处加检查会藏 bug。找是谁产出该状态。guard、重试、吞错、clamp、丢弃状态是常见的藏 bug 方式。
+- 仅重启后失败时，先怀疑持久状态：config、cache、lock 文件、序列化状态。
+- 查模式，不只看实例。找所有同类故障并全部修掉。
+- 若 workaround 需要一整段注释才能自圆其说，代码就错了。修代码，不修注释。
+- 若决定性事实要深挖才找到，提议便宜、常开的信号，本可一眼看到。

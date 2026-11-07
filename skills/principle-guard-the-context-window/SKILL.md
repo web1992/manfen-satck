@@ -1,12 +1,12 @@
 ---
 name: principle-guard-the-context-window
-description: "Apply when context is filling up: large outputs, long files, repeated reads, fan-out planning. Route bulk to subagents; keep summaries in the main thread, not raw payloads."
+description: "context 将满时适用：大输出、长文件、重复读取、fan-out 规划。大块交给 subagent；主线程留摘要，不要原始 payload。"
 disable-model-invocation: true
 ---
 
 # Guard the Context Window
 
-**Why:** Context overflow degrades reasoning quality, creates compression artifacts, and halts progress.
+**原因：** context 溢出会降低推理质量、产生压缩伪影并阻断进展。
 
-**Pattern:**
-- **Size phases and cap scope.** Limit files per phase, set turn budgets, account for mechanism costs.
+**模式：**
+- **分阶段并 cap scope。** 限制每阶段文件数、设 turn 预算、计入机制成本。
